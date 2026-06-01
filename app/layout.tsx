@@ -7,7 +7,7 @@ const kanit = Kanit({
   weight: ["300", "400", "500", "700"],
 });
 
-const siteUrl = "https://evchargemap.th";
+const siteUrl = "https://evrentalth.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
       "ค้นหาสถานีชาร์จรถไฟฟ้าทั่วประเทศไทย ดูแผนที่ สถานะ และประเภทหัวชาร์จได้ทันที",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "EV Charge Map Thailand - ค้นหาจุดชาร์จรถไฟฟ้า",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: "EV Charge Map Thailand | ค้นหาจุดชาร์จรถไฟฟ้าทั่วไทย",
     description:
       "ค้นหาสถานีชาร์จรถไฟฟ้าทั่วประเทศไทย ดูแผนที่ สถานะ และประเภทหัวชาร์จได้ทันที",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -126,7 +126,7 @@ export default function RootLayout({
                   contactPoint: {
                     "@type": "ContactPoint",
                     contactType: "customer service",
-                    email: "hello@evchargemap.th",
+                    email: "hello@evrentalth.com",
                     availableLanguage: ["Thai", "English"],
                   },
                 },

@@ -18,7 +18,7 @@ export default function ContactPage() {
 
         <div className="grid md:grid-cols-3 gap-4 mb-10">
           {[
-            { icon: Mail, title: "อีเมล", value: "hello@evchargemap.th", sub: "ตอบภายใน 24 ชั่วโมง" },
+            { icon: Mail, title: "อีเมล", value: "hello@evrentalth.com", sub: "ตอบภายใน 24 ชั่วโมง" },
             { icon: MessageCircle, title: "LINE OA", value: "@EVChargeMapTH", sub: "ตอบเร็วที่สุด" },
             { icon: MapPin, title: "ที่ตั้ง", value: "กรุงเทพมหานคร", sub: "ประเทศไทย" },
           ].map(c => (

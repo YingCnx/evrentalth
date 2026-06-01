@@ -27,7 +27,7 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
 
   // BreadcrumbList JSON-LD
   useEffect(() => {
-    const siteUrl = "https://evchargemap.th";
+    const siteUrl = "https://evrentalth.com";
     const segments = pathname.split("/").filter(Boolean);
     const items = [
       { "@type": "ListItem", position: 1, name: "หน้าแรก", item: siteUrl },

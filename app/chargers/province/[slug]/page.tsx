@@ -134,9 +134,9 @@ export default async function ProvinceChargersPage({ params }: { params: Promise
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "หน้าแรก", item: "https://evchargemap.th" },
-      { "@type": "ListItem", position: 2, name: "เครือข่ายชาร์จ", item: "https://evchargemap.th/chargers" },
-      { "@type": "ListItem", position: 3, name: `จุดชาร์จ${provinceTh}`, item: `https://evchargemap.th/chargers/province/${slug}` },
+      { "@type": "ListItem", position: 1, name: "หน้าแรก", item: "https://evrentalth.com" },
+      { "@type": "ListItem", position: 2, name: "เครือข่ายชาร์จ", item: "https://evrentalth.com/chargers" },
+      { "@type": "ListItem", position: 3, name: `จุดชาร์จ${provinceTh}`, item: `https://evrentalth.com/chargers/province/${slug}` },
     ],
   };
 
