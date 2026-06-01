@@ -1,6 +1,6 @@
 "use client";
 
-import { Zap, MapPin, Clock, Phone, ExternalLink, X, Navigation } from "lucide-react";
+import { Zap, MapPin, Star, Bookmark, Navigation, Info, UtensilsCrossed, Coffee, ShoppingBag, SquareParking, Wifi } from "lucide-react";
 
 type Connection = {
   ConnectionType?: { Title?: string };
@@ -26,26 +26,37 @@ export type Station = {
   AccessComments?: string;
 };
 
-function ConnectorBadge({ conn }: { conn: Connection }) {
-  const title = conn.ConnectionType?.Title ?? "Charger";
-  const kw = conn.PowerKW;
-  const qty = conn.Quantity;
-  const isDC = title.toLowerCase().match(/ccs|chademo|dc/);
-  const isFast = kw && kw >= 50;
-
-  const color = isFast
-    ? "bg-orange-50 text-orange-600 border-orange-200"
-    : isDC
-    ? "bg-blue-50 text-blue-600 border-blue-200"
-    : "bg-green-50 text-green-600 border-green-200";
-
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border ${color}`}>
-      <Zap size={10} />
-      <span>{title.split(" ")[0]}{kw ? ` · ${kw}kW` : ""}{qty && qty > 1 ? ` × ${qty}` : ""}</span>
-    </span>
-  );
+export function getNetworkInfo(operatorTitle?: string) {
+  const t = (operatorTitle ?? "").toLowerCase();
+  if (t.includes("ptt")) return { abbr: "PTT", bg: "#E8421A", text: "#fff" };
+  if (t.includes("ea") || t.includes("anywhere")) return { abbr: "EA", bg: "#1565C0", text: "#fff" };
+  if (t.includes("elexa")) return { abbr: "EX", bg: "#0D1B2A", text: "#00C8FF" };
+  if (t.includes("pluz") || t.includes("ev station")) return { abbr: "EV", bg: "#00897B", text: "#fff" };
+  if (t.includes("pea") || t.includes("volta")) return { abbr: "PEA", bg: "#6A1B9A", text: "#fff" };
+  if (t.includes("sharge")) return { abbr: "SH", bg: "#F57F17", text: "#fff" };
+  return { abbr: "EV", bg: "#374151", text: "#fff" };
 }
+
+export function mockRating(id: number) {
+  const ratings = [4.5, 4.6, 4.7, 4.8, 4.9, 4.3, 4.4];
+  const counts = [36, 58, 74, 96, 128, 24, 81];
+  const i = id % ratings.length;
+  return { rating: ratings[i], count: counts[i] };
+}
+
+function mockAvailability(conn: Connection, seed: number) {
+  const total = conn.Quantity ?? 2;
+  const used = seed % 3 === 0 ? total : seed % 3 === 1 ? Math.floor(total / 2) : 0;
+  return { avail: Math.max(0, total - used), total };
+}
+
+const AMENITIES = [
+  { Icon: UtensilsCrossed, label: "ร้านอาหาร" },
+  { Icon: Coffee, label: "กาแฟ" },
+  { Icon: ShoppingBag, label: "ห้าง" },
+  { Icon: SquareParking, label: "ที่จอดรถ" },
+  { Icon: Wifi, label: "Wi-Fi" },
+];
 
 type Props = { station: Station; onClose: () => void };
 
@@ -54,103 +65,143 @@ export default function StationCard({ station, onClose }: Props) {
   const isOperational = station.StatusType?.IsOperational ?? true;
   const connections = station.Connections ?? [];
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${info.Latitude},${info.Longitude}`;
+  const { rating, count } = mockRating(station.ID);
+  const network = getNetworkInfo(station.OperatorInfo?.Title);
 
-  const addressParts = [info.AddressLine1, info.Town, info.StateOrProvince].filter(Boolean);
+  const dcConns = connections.filter((c) => /ccs|chademo|dc|gb.t dc/i.test(c.ConnectionType?.Title ?? ""));
+  const acConns = connections.filter((c) => !/ccs|chademo|dc|gb.t dc/i.test(c.ConnectionType?.Title ?? ""));
+
+  const totalAvail = connections.reduce((sum, c, i) => {
+    const { avail } = mockAvailability(c, station.ID + i);
+    return sum + avail;
+  }, 0);
+  const totalConnectors = connections.reduce((sum, c) => sum + (c.Quantity ?? 1), 0);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden w-full">
-      {/* Header */}
-      <div className="px-5 pt-4 pb-3 border-b border-gray-100">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isOperational ? "bg-green-500" : "bg-gray-400"}`} />
-              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">
-                {isOperational ? "เปิดใช้งาน" : "ปิดชั่วคราว"}
-              </span>
-              {station.OperatorInfo?.Title && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-[11px] text-gray-400">{station.OperatorInfo.Title}</span>
-                </>
-              )}
-            </div>
-            <h2 className="font-semibold text-gray-900 text-sm leading-snug">{info.Title}</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex-shrink-0 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <X size={16} />
-          </button>
+    <div className="bg-white w-full" onClick={(e) => e.stopPropagation()}>
+      {/* Top: photo + info */}
+      <div className="flex">
+        {/* Network photo */}
+        <div className="w-28 sm:w-36 flex-shrink-0 flex items-center justify-center"
+          style={{ background: network.bg, minHeight: 110 }}>
+          <span className="text-2xl font-black" style={{ color: network.text }}>{network.abbr}</span>
         </div>
-      </div>
 
-      {/* Body */}
-      <div className="px-5 py-4 space-y-4">
-        {/* Address */}
-        {addressParts.length > 0 && (
-          <div className="flex items-start gap-2.5">
-            <MapPin size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-600 leading-relaxed">{addressParts.join(", ")}</p>
+        {/* Info block */}
+        <div className="flex-1 min-w-0 px-4 py-3">
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="font-bold text-gray-900 text-sm leading-snug flex-1">{info.Title}</h2>
+            <button className="flex-shrink-0 text-gray-300 hover:text-cyan-500 transition-colors mt-0.5">
+              <Bookmark size={15} />
+            </button>
           </div>
-        )}
-
-        {/* Connectors */}
-        {connections.length > 0 && (
-          <div>
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">หัวชาร์จ</p>
-            <div className="flex flex-wrap gap-1.5">
-              {connections.map((c, i) => <ConnectorBadge key={i} conn={c} />)}
-            </div>
+          <div className="flex items-start gap-1 mt-1 text-xs text-gray-500">
+            <MapPin size={11} className="text-gray-400 flex-shrink-0 mt-0.5" />
+            <span className="line-clamp-1">{[info.AddressLine1, info.Town].filter(Boolean).join(", ")}</span>
           </div>
-        )}
-
-        {/* Meta row */}
-        <div className="flex flex-col gap-1.5">
-          {station.UsageCost && (
-            <div className="flex items-center gap-2.5 text-xs text-gray-600">
-              <Zap size={13} className="text-gray-400 flex-shrink-0" />
-              <span>{station.UsageCost}</span>
-            </div>
-          )}
-          {station.AccessComments && (
-            <div className="flex items-center gap-2.5 text-xs text-gray-600">
-              <Clock size={13} className="text-gray-400 flex-shrink-0" />
-              <span>{station.AccessComments}</span>
-            </div>
-          )}
-          {info.ContactTelephone1 && (
-            <div className="flex items-center gap-2.5 text-xs text-gray-600">
-              <Phone size={13} className="text-gray-400 flex-shrink-0" />
-              <a href={`tel:${info.ContactTelephone1}`} className="hover:text-green-600 transition-colors">
-                {info.ContactTelephone1}
+          {info.StateOrProvince && (
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-gray-400">{info.StateOrProvince}</span>
+              <a href={`https://www.google.com/maps?q=${info.Latitude},${info.Longitude}`}
+                target="_blank" rel="noopener noreferrer"
+                className="text-xs text-cyan-600 hover:underline font-medium">
+                ดูบนแผนที่
               </a>
             </div>
           )}
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            <div className="flex items-center gap-1">
+              <Star size={12} className="text-yellow-400" fill="currentColor" />
+              <span className="text-xs font-semibold text-gray-800">{rating}</span>
+              <span className="text-xs text-gray-400">({count} รีวิว)</span>
+            </div>
+            <div className={`flex items-center gap-1 text-xs font-medium ${totalAvail > 0 && isOperational ? "text-green-600" : "text-red-500"}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${totalAvail > 0 && isOperational ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
+              {isOperational
+                ? (totalAvail > 0 ? `ว่าง ${totalAvail}/${totalConnectors} หัว` : "เต็มทุกหัว")
+                : "ออฟไลน์"}
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 mt-0.5">อัปเดตเมื่อ 1 นาทีที่แล้ว</p>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="px-5 pb-4 flex gap-2">
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-semibold transition-colors"
-        >
-          <Navigation size={13} />
+      {/* Middle: connectors + amenities */}
+      <div className="flex border-t border-gray-100">
+        {/* Connector details */}
+        <div className="flex-1 px-4 py-3">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">หัวชาร์จและกำลังไฟ</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {dcConns.map((c, i) => {
+              const { avail, total } = mockAvailability(c, station.ID + i);
+              return (
+                <div key={`dc-${i}`}>
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Zap size={11} className="text-orange-500" fill="currentColor" />
+                    <span className="text-xs font-bold text-gray-800">DC {c.PowerKW ?? "?"} kW</span>
+                  </div>
+                  <p className="text-[11px] text-gray-500">{c.ConnectionType?.Title?.split("(")[0].trim() ?? "CCS2"}</p>
+                  <p className={`text-[11px] font-semibold ${avail > 0 ? "text-green-600" : "text-red-500"}`}>{avail}/{total} ว่าง</p>
+                </div>
+              );
+            })}
+            {acConns.map((c, i) => {
+              const { avail, total } = mockAvailability(c, station.ID + i + 1);
+              return (
+                <div key={`ac-${i}`}>
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Zap size={11} className="text-green-500" fill="currentColor" />
+                    <span className="text-xs font-bold text-gray-800">AC {c.PowerKW ?? "?"} kW</span>
+                  </div>
+                  <p className="text-[11px] text-gray-500">{c.ConnectionType?.Title?.split("(")[0].trim() ?? "Type 2"}</p>
+                  <p className={`text-[11px] font-semibold ${avail > 0 ? "text-green-600" : "text-red-500"}`}>{avail}/{total} ว่าง</p>
+                </div>
+              );
+            })}
+            {connections.length === 0 && (
+              <p className="col-span-2 text-xs text-gray-400">ไม่มีข้อมูลหัวชาร์จ</p>
+            )}
+          </div>
+        </div>
+
+        {/* Amenities */}
+        <div className="w-28 sm:w-32 border-l border-gray-100 px-3 py-3 flex-shrink-0">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">สิ่งอำนวยความสะดวก</p>
+          <div className="flex flex-wrap gap-1.5">
+            {AMENITIES.map(({ Icon, label }, i) => {
+              const has = (station.ID + i) % 3 !== 0;
+              return (
+                <div key={label}
+                  className={`p-1.5 rounded-lg transition-colors ${has ? "bg-cyan-50 text-cyan-600" : "bg-gray-50 text-gray-300"}`}
+                  title={label}>
+                  <Icon size={13} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2 px-4 py-3 border-t border-gray-100">
+        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-colors"
+          style={{ background: "#00C8FF", color: "#08101e" }}>
+          <Navigation size={15} />
           นำทาง
         </a>
-        {station.OperatorInfo?.WebsiteURL && (
-          <a
-            href={station.OperatorInfo.WebsiteURL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-2.5 border border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700 rounded-xl transition-colors"
-          >
-            <ExternalLink size={13} />
+        {station.OperatorInfo?.WebsiteURL ? (
+          <a href={station.OperatorInfo.WebsiteURL} target="_blank" rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 transition-colors">
+            <Info size={15} />
+            รายละเอียด
           </a>
+        ) : (
+          <button onClick={onClose}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-gray-700 border border-gray-200 hover:border-gray-300 transition-colors">
+            <Info size={15} />
+            รายละเอียด
+          </button>
         )}
       </div>
     </div>

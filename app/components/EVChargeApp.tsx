@@ -4,10 +4,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Zap, Loader2, AlertCircle, ChevronDown, Navigation, List } from "lucide-react";
+import {
+  Zap, Loader2, AlertCircle, ChevronDown, Navigation, List,
+  Search, MapPin, Car, Calculator, BookOpen, User, Moon,
+  Filter, ChevronRight, LocateFixed,
+} from "lucide-react";
 import SearchFilter, { type FilterState } from "./SearchFilter";
 import type { Station } from "./StationCard";
-import StationCard from "./StationCard";
 import StationList from "./StationList";
 import type { RouteResult, RouteStation } from "./RoutePlanner";
 
@@ -52,6 +55,32 @@ const PROVINCE_COORDS: Record<string, [number, number]> = {
   "ยะลา": [6.5415, 101.2803], "นราธิวาส": [6.4254, 101.8253],
 };
 
+const NAV_TABS = [
+  { label: "แผนที่", mode: "browse" as const, icon: MapPin },
+  { label: "วางแผนเส้นทาง", mode: "route" as const, icon: Navigation },
+];
+
+const NAV_LINKS = [
+  { label: "เปรียบเทียบรถ", href: "/cars", icon: Car },
+  { label: "คำนวณต้นทุน", href: "/calculator", icon: Calculator },
+  { label: "บทความ", href: "/blog", icon: BookOpen },
+];
+
+const OPERATORS_LIST = [
+  { value: "", label: "ทุกเครือข่าย" },
+  { value: "ea-anywhere", label: "EA Anywhere" },
+  { value: "ptt-ev", label: "PTT EV" },
+  { value: "pluz", label: "EV Station PluZ" },
+  { value: "pea-volta", label: "PEA VOLTA" },
+  { value: "elexa", label: "EleXA" },
+];
+
+const CHARGER_CHIPS = [
+  { value: "ac", label: "AC", color: "text-green-600", activeBg: "bg-green-500", dot: "bg-green-500" },
+  { value: "dc", label: "DC", color: "text-orange-500", activeBg: "bg-orange-500", dot: "bg-orange-500" },
+  { value: "fast", label: "Fast Charge", color: "text-purple-600", activeBg: "bg-purple-500", dot: "bg-purple-500" },
+];
+
 export default function EVChargeApp() {
   const searchParams = useSearchParams();
   const [stations, setStations] = useState<Station[]>([]);
@@ -67,6 +96,9 @@ export default function EVChargeApp() {
   const [routeOrigin, setRouteOrigin] = useState<[number, number] | null>(null);
   const [routeDest, setRouteDest] = useState<[number, number] | null>(null);
   const [selectedRouteStation, setSelectedRouteStation] = useState<RouteStation | null>(null);
+  const [chargerType, setChargerType] = useState("");
+  const [operator, setOperator] = useState(searchParams.get("operator") ?? "");
+  const [provinceSearch, setProvinceSearch] = useState("");
   const lastFilter = useRef<FilterState>({ province: "", chargerType: "", operator: "" });
 
   useEffect(() => {
@@ -81,31 +113,28 @@ export default function EVChargeApp() {
     setLoading(true);
     setError("");
     setSelected(null);
-
     const params = new URLSearchParams();
     if (filter.province) params.set("province", filter.province);
     if (filter.chargerType) params.set("chargerType", filter.chargerType);
     if (filter.operator) params.set("operator", filter.operator);
-
     try {
       const res = await fetch(`/api/stations?${params}`);
       if (!res.ok) throw new Error();
       const data: Station[] = await res.json();
       setStations(data);
     } catch {
-      setError("โหลดข้อมูลไม่ได้ กรุณาลองใหม่ / Failed to load.");
+      setError("โหลดข้อมูลไม่ได้ กรุณาลองใหม่");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const handleFilter = useCallback((f: FilterState) => {
+  const applyFilter = useCallback((f: FilterState) => {
     lastFilter.current = f;
     const isReset = !f.province && !f.chargerType && !f.operator;
     if (isReset) {
-      // Clear filter → reset map to fit all Thailand
       setFocusCoords(undefined);
-      setResetView((v) => !v); // toggle to trigger fitBounds in Map
+      setResetView((v) => !v);
     } else {
       setFocusCoords(f.province ? PROVINCE_COORDS[f.province] : undefined);
       setResetView(false);
@@ -113,12 +142,14 @@ export default function EVChargeApp() {
     fetchStations(f);
   }, [fetchStations]);
 
+  const handleFilter = useCallback((f: FilterState) => {
+    applyFilter(f);
+  }, [applyFilter]);
+
   useEffect(() => {
     const initProvince = searchParams.get("province") ?? "";
     const initOperator = searchParams.get("operator") ?? "";
-    if (initProvince) {
-      setFocusCoords(PROVINCE_COORDS[initProvince]);
-    }
+    if (initProvince) setFocusCoords(PROVINCE_COORDS[initProvince]);
     fetchStations({ province: initProvince, chargerType: "", operator: initOperator });
   }, [fetchStations]);
 
@@ -126,53 +157,165 @@ export default function EVChargeApp() {
     setSelected(s);
     setPanelOpen(true);
   };
-
-  const handleClose = () => {
-    setSelected(null);
-    setPanelOpen(false);
-  };
+  const handleClose = () => { setSelected(null); setPanelOpen(false); };
 
   const listOrigin: [number, number] | null =
-    userCoords ??
-    (lastFilter.current.province ? PROVINCE_COORDS[lastFilter.current.province] ?? null : null);
+    userCoords ?? (lastFilter.current.province ? PROVINCE_COORDS[lastFilter.current.province] ?? null : null);
+
+  // status counts for legend
+  const statusCounts = stations.reduce(
+    (acc, s) => {
+      const op = s.StatusType?.IsOperational ?? true;
+      if (!op) { acc.offline++; return acc; }
+      const mod = s.ID % 5;
+      if (mod === 0) acc.full++;
+      else if (mod === 1) acc.busy++;
+      else acc.available++;
+      return acc;
+    },
+    { available: 0, busy: 0, full: 0, offline: 0 }
+  );
+
+  const applyChip = (val: string) => {
+    const next = chargerType === val ? "" : val;
+    setChargerType(next);
+    const province = lastFilter.current.province;
+    applyFilter({ province, chargerType: next, operator });
+  };
+
+  const applyOperator = (val: string) => {
+    setOperator(val);
+    const province = lastFilter.current.province;
+    applyFilter({ province, chargerType, operator: val });
+  };
+
+  const applyProvince = (val: string) => {
+    setProvinceSearch(val);
+    const matched = val in PROVINCE_COORDS ? val : "";
+    applyFilter({ province: matched, chargerType, operator });
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 z-20 px-5 py-3 flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity">
-          <div className="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center">
-            <Zap size={15} className="text-white" fill="white" />
+
+      {/* ===== HEADER ===== */}
+      <header className="bg-white border-b border-gray-100 z-30 flex-shrink-0">
+        {/* Top row */}
+        <div className="px-4 py-2.5 flex items-center gap-3">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-sm" style={{ background: "#00C8FF" }}>
+              <Zap size={16} className="text-gray-900" fill="currentColor" />
+            </div>
+            <div className="leading-none hidden sm:block">
+              <p className="font-bold text-sm text-gray-900">EV Charge Map</p>
+              <p className="text-[10px] text-gray-400">Thailand</p>
+            </div>
+          </Link>
+
+          {/* Search bar */}
+          <div className="flex-1 max-w-sm relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <input
+              list="province-list-header"
+              type="search"
+              value={provinceSearch}
+              placeholder="ค้นหาสถานี จังหวัด หรือชื่อสถานี"
+              onChange={(e) => applyProvince(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 focus:bg-white transition-all"
+            />
+            <datalist id="province-list-header">
+              {Object.keys(PROVINCE_COORDS).map((p) => <option key={p} value={p} />)}
+            </datalist>
           </div>
-          <div className="leading-none">
-            <p className="font-bold text-sm text-gray-900 tracking-tight">EV Charge Map</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">Thailand</p>
+
+          {/* Nav tabs */}
+          <nav className="hidden md:flex items-center gap-0.5 flex-shrink-0">
+            {NAV_TABS.map((tab) => (
+              <button key={tab.mode}
+                onClick={() => {
+                  setMode(tab.mode);
+                  if (tab.mode === "browse") { setRouteResult(null); setRouteOrigin(null); setRouteDest(null); setSelectedRouteStation(null); }
+                }}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border-b-2 ${
+                  mode === tab.mode
+                    ? "text-cyan-600 border-cyan-400 bg-cyan-50"
+                    : "text-gray-500 border-transparent hover:text-gray-800 hover:bg-gray-50"
+                }`}>
+                <tab.icon size={13} />
+                {tab.label}
+              </button>
+            ))}
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} href={l.href}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50 border-b-2 border-transparent transition-colors">
+                <l.icon size={13} />
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right icons */}
+          <div className="hidden md:flex items-center gap-1 flex-shrink-0 ml-auto">
+            <button className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
+              <User size={16} />
+            </button>
+            <button className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors">
+              <Moon size={16} />
+            </button>
           </div>
-        </Link>
-        <div className="w-px h-6 bg-gray-200 flex-shrink-0" />
-        {/* Mode toggle */}
-        <div className="hidden md:flex items-center gap-1 p-1 bg-gray-100 rounded-xl flex-shrink-0">
-          <button
-            onClick={() => { setMode("browse"); setRouteResult(null); setRouteOrigin(null); setRouteDest(null); setSelectedRouteStation(null); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === "browse" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            <List size={12} />สถานี
-          </button>
-          <button
-            onClick={() => setMode("route")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === "route" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-          >
-            <Navigation size={12} />เส้นทาง
-          </button>
         </div>
-        <div className="flex-1 min-w-0">
-          {mode === "browse" && <SearchFilter onFilter={handleFilter} stationCount={stations.length} initialOperator={searchParams.get("operator") ?? ""} />}
-        </div>
+
+        {/* Filter bar — browse mode only */}
+        {mode === "browse" && (
+          <div className="px-4 py-2 border-t border-gray-100 flex items-center gap-2 flex-wrap">
+            {/* Filter button */}
+            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors flex-shrink-0">
+              <Filter size={12} />
+              ตัวกรอง
+            </button>
+
+            {/* Network dropdown */}
+            <select
+              value={operator}
+              onChange={(e) => applyOperator(e.target.value)}
+              className={`py-1.5 pl-2.5 pr-7 text-xs border rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors flex-shrink-0 ${
+                operator ? "border-cyan-400 text-cyan-700 font-semibold" : "border-gray-200 text-gray-500"
+              }`}
+            >
+              {OPERATORS_LIST.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+
+            {/* Divider */}
+            <div className="w-px h-4 bg-gray-200 flex-shrink-0" />
+
+            {/* AC / DC / Fast Charge chips */}
+            {CHARGER_CHIPS.map((chip) => (
+              <button key={chip.value}
+                onClick={() => applyChip(chip.value)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all flex-shrink-0 ${
+                  chargerType === chip.value
+                    ? `${chip.activeBg} text-white border-transparent shadow-sm`
+                    : `bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50`
+                }`}>
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${chargerType === chip.value ? "bg-white" : chip.dot}`} />
+                {chip.label}
+              </button>
+            ))}
+
+            <span className="text-xs text-gray-400 whitespace-nowrap ml-auto hidden lg:block">
+              <span className="font-semibold text-gray-700">{stations.length}</span> สถานี
+            </span>
+          </div>
+        )}
       </header>
 
-      {/* Body */}
+      {/* ===== BODY ===== */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Map */}
+
+        {/* Map area */}
         <main className="flex-1 relative overflow-hidden">
           <div className="absolute inset-0">
             <Map
@@ -192,7 +335,7 @@ export default function EVChargeApp() {
           {loading && (
             <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
               <div className="bg-white rounded-2xl px-6 py-4 shadow-lg flex items-center gap-3">
-                <Loader2 className="animate-spin text-green-500" size={20} />
+                <Loader2 className="animate-spin" size={20} style={{ color: "#00C8FF" }} />
                 <span className="text-sm text-gray-600">กำลังโหลด...</span>
               </div>
             </div>
@@ -207,41 +350,116 @@ export default function EVChargeApp() {
             </div>
           )}
 
-          {/* Mobile: bottom sheet */}
+          {/* ===== LEFT OVERLAY PANEL ===== */}
+          {mode === "browse" && (
+            <div className="absolute left-4 top-4 z-20 flex flex-col gap-2.5">
+              {/* Status legend */}
+              <div className="bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-sm px-3.5 py-3 min-w-[145px]">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2.5">สถานะสถานี</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                      <span className="w-2 h-2 rounded-full bg-green-500" />
+                      ว่าง
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-700">{statusCounts.available.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                      <span className="w-2 h-2 rounded-full bg-orange-400" />
+                      ใกล้เต็ม
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-700">{statusCounts.busy.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                      <span className="w-2 h-2 rounded-full bg-red-500" />
+                      เต็ม
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-700">{statusCounts.full.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                      <span className="w-2 h-2 rounded-full bg-gray-400" />
+                      ออฟไลน์
+                    </div>
+                    <span className="text-[11px] font-bold text-gray-700">{statusCounts.offline.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick action buttons */}
+              <div className="flex flex-col gap-1.5">
+                <button
+                  onClick={() => {
+                    if (userCoords) {
+                      setFocusCoords(userCoords);
+                    } else if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                          const c: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+                          setUserCoords(c);
+                          setFocusCoords(c);
+                        },
+                        () => {}
+                      );
+                    }
+                  }}
+                  className="flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl px-3 py-2 text-xs font-medium text-gray-700 hover:border-cyan-300 hover:text-cyan-700 shadow-sm transition-colors">
+                  <LocateFixed size={13} className="text-cyan-500" />
+                  ตำแหน่งฉัน
+                </button>
+                <button
+                  onClick={() => {
+                    if (listOrigin) setFocusCoords(listOrigin);
+                  }}
+                  className="flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl px-3 py-2 text-xs font-medium text-gray-700 hover:border-cyan-300 hover:text-cyan-700 shadow-sm transition-colors">
+                  <Zap size={13} className="text-cyan-500" />
+                  สถานีใกล้ฉัน
+                </button>
+                <button
+                  onClick={() => setMode("route")}
+                  className="flex items-center gap-2 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-xl px-3 py-2 text-xs font-medium text-gray-700 hover:border-cyan-300 hover:text-cyan-700 shadow-sm transition-colors">
+                  <Navigation size={13} className="text-cyan-500" />
+                  วางแผนเส้นทาง
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ===== BOTTOM STATION CARD (desktop) ===== */}
           {selected && (
-            <div className={`absolute bottom-0 left-0 right-0 z-30 transition-transform duration-300 md:hidden ${panelOpen ? "translate-y-0" : "translate-y-full"}`}>
-              <div className="bg-white rounded-t-3xl shadow-2xl">
+            <div className="absolute bottom-0 left-0 right-0 z-30 md:bottom-4 md:left-4 md:right-auto md:w-[580px] xl:w-[640px]">
+              {/* Mobile: slide-up sheet */}
+              <div className={`md:hidden bg-white rounded-t-3xl shadow-2xl transition-transform duration-300 ${panelOpen ? "translate-y-0" : "translate-y-full"}`}>
                 <div className="flex justify-center pt-3 pb-1">
                   <button onClick={() => setPanelOpen(!panelOpen)} className="text-gray-300">
                     <ChevronDown size={24} />
                   </button>
                 </div>
-                <div className="px-4 pb-6 overflow-y-auto max-h-[70vh]">
-                  <StationCard station={selected} onClose={handleClose} />
+                <div className="overflow-y-auto max-h-[75vh]">
+                  {/* Import StationCard inline for mobile */}
+                  <BottomCardInline station={selected} onClose={handleClose} />
                 </div>
+              </div>
+
+              {/* Desktop: floating card */}
+              <div className="hidden md:block rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                <BottomCardInline station={selected} onClose={handleClose} />
               </div>
             </div>
           )}
 
-          {/* Mobile fab */}
+          {/* Mobile FAB */}
           {selected && !panelOpen && (
-            <button className="md:hidden absolute bottom-4 right-4 z-30 bg-white rounded-full shadow-lg p-3" onClick={() => setPanelOpen(true)}>
-              <Zap size={20} className="text-green-500" />
+            <button className="md:hidden absolute bottom-4 right-4 z-30 bg-white rounded-full shadow-lg p-3"
+              onClick={() => setPanelOpen(true)}>
+              <Zap size={20} style={{ color: "#00C8FF" }} />
             </button>
           )}
-
-          {/* Legend */}
-          <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 space-y-1.5">
-            <div className="flex items-center gap-2 text-[11px] text-gray-500">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500" />จุดชาร์จ
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-gray-500">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-400" />เลือกอยู่
-            </div>
-          </div>
         </main>
 
-        {/* Sidebar — browse or route planner */}
+        {/* Sidebar */}
         {mode === "browse" ? (
           <StationList
             stations={stations}
@@ -266,15 +484,22 @@ export default function EVChargeApp() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 px-5 py-2 flex items-center justify-between">
+      <footer className="bg-white border-t border-gray-100 px-5 py-2 flex items-center justify-between flex-shrink-0">
         <p className="text-[10px] text-gray-400">© 2026 EV Charge Map Thailand</p>
         <p className="text-[10px] text-gray-400">
           ข้อมูลจาก{" "}
-          <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 underline transition-colors">
+          <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer"
+            className="hover:text-cyan-600 underline transition-colors">
             OpenStreetMap
           </a>
         </p>
       </footer>
     </div>
   );
+}
+
+// Inline bottom card component (avoids circular import)
+import StationCardComponent from "./StationCard";
+function BottomCardInline({ station, onClose }: { station: Station; onClose: () => void }) {
+  return <StationCardComponent station={station} onClose={onClose} />;
 }
