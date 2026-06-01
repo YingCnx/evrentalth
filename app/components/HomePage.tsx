@@ -16,13 +16,13 @@ const STATS = [
 const FEATURES = [
   {
     icon: MapPin,
-    color: "bg-green-50 text-green-600",
+    color: "bg-cyan-50 text-cyan-600",
     title: "แผนที่จุดชาร์จ",
     desc: "ค้นหาสถานีชาร์จใกล้คุณแบบ real-time กรองตามประเภทหัวชาร์จ Type 2, CCS, CHAdeMO, DC Fast Charge",
     cta: "เปิดแผนที่",
     href: "/map",
     badge: "พร้อมใช้",
-    badgeColor: "bg-green-100 text-green-700",
+    badgeColor: "bg-cyan-100 text-cyan-700",
   },
   {
     icon: Navigation,
@@ -32,7 +32,7 @@ const FEATURES = [
     cta: "วางแผนเส้นทาง",
     href: "/map",
     badge: "พร้อมใช้",
-    badgeColor: "bg-green-100 text-green-700",
+    badgeColor: "bg-cyan-100 text-cyan-700",
   },
   {
     icon: Car,
@@ -42,7 +42,7 @@ const FEATURES = [
     cta: "ดูรุ่นทั้งหมด",
     href: "/cars",
     badge: "พร้อมใช้",
-    badgeColor: "bg-green-100 text-green-700",
+    badgeColor: "bg-cyan-100 text-cyan-700",
   },
   {
     icon: Calculator,
@@ -52,7 +52,7 @@ const FEATURES = [
     cta: "คำนวณเลย",
     href: "/calculator",
     badge: "พร้อมใช้",
-    badgeColor: "bg-green-100 text-green-700",
+    badgeColor: "bg-cyan-100 text-cyan-700",
   },
 ];
 
@@ -82,8 +82,8 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center shadow-sm">
-              <Zap size={17} className="text-white" fill="white" />
+            <div className="w-8 h-8 bg-cyan-400 rounded-xl flex items-center justify-center shadow-sm">
+              <Zap size={17} className="text-gray-900" fill="currentColor" />
             </div>
             <div className="leading-none">
               <p className="font-bold text-sm text-gray-900">EV Charge Map</p>
@@ -98,7 +98,7 @@ export default function HomePage() {
           </div>
           <Link
             href="/map"
-            className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            className="flex items-center gap-1.5 bg-cyan-400 hover:bg-cyan-300 text-gray-900 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
           >
             <MapPin size={14} />เปิดแผนที่
           </Link>
@@ -106,25 +106,26 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-green-950 text-white">
+      <section className="relative overflow-hidden text-white" style={{ background: "linear-gradient(135deg, #0A0F1A 0%, #0D1830 50%, #091828 100%)" }}>
         {/* Grid pattern */}
         <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+          style={{ backgroundImage: "linear-gradient(rgba(0,200,255,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,255,.2) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
         {/* Glow */}
-        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-green-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-[600px] h-[400px] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" style={{ background: "rgba(0,200,255,0.12)" }} />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" style={{ background: "rgba(0,150,255,0.08)" }} />
 
         <div className="relative max-w-6xl mx-auto px-5 py-24 md:py-32">
           <div className="max-w-2xl">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-green-500/20 border border-green-500/30 rounded-full px-4 py-1.5 text-sm text-green-400 font-medium mb-6">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-6 border"
+              style={{ background: "rgba(0,200,255,0.12)", borderColor: "rgba(0,200,255,0.25)", color: "#00C8FF" }}>
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#00C8FF" }} />
               อัปเดตข้อมูลแบบ real-time
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
               วางแผนเดินทาง<br />
-              <span className="text-green-400">ด้วยรถ EV</span><br />
+              <span style={{ color: "#00C8FF" }}>ด้วยรถ EV</span><br />
               ให้ง่ายขึ้น
             </h1>
             <p className="text-lg text-gray-300 leading-relaxed mb-10 max-w-lg">
@@ -133,14 +134,16 @@ export default function HomePage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/map"
-                className="flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-bold px-6 py-3.5 rounded-2xl transition-colors text-base shadow-lg shadow-green-900/40"
+                className="flex items-center gap-2 font-bold px-6 py-3.5 rounded-2xl transition-colors text-base shadow-lg"
+                style={{ background: "#00C8FF", color: "#0A0F1A", boxShadow: "0 8px 32px rgba(0,200,255,0.25)" }}
               >
                 <MapPin size={18} />เปิดแผนที่จุดชาร์จ
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/map"
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-2xl transition-colors text-base"
+                className="flex items-center gap-2 border text-white font-semibold px-6 py-3.5 rounded-2xl transition-colors text-base hover:bg-white/10"
+                style={{ background: "rgba(255,255,255,0.07)", borderColor: "rgba(255,255,255,0.15)" }}
               >
                 <Navigation size={18} />วางแผนเส้นทาง
               </Link>
@@ -172,7 +175,8 @@ export default function HomePage() {
             <Link
               key={f.title}
               href={f.href}
-              className="group border border-gray-100 rounded-2xl p-6 hover:border-green-200 hover:shadow-lg hover:shadow-green-50 transition-all duration-200"
+              className="group border border-gray-100 rounded-2xl p-6 hover:border-cyan-200 hover:shadow-lg transition-all duration-200"
+              style={{ ["--tw-shadow-color" as string]: "rgba(0,200,255,0.08)" }}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${f.color}`}>
@@ -182,7 +186,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">{f.title}</h3>
               <p className="text-sm text-gray-500 leading-relaxed mb-4">{f.desc}</p>
-              <div className="flex items-center gap-1 text-sm font-semibold text-green-600 group-hover:gap-2 transition-all">
+              <div className="flex items-center gap-1 text-sm font-semibold text-cyan-600 group-hover:gap-2 transition-all">
                 {f.cta} <ChevronRight size={15} />
               </div>
             </Link>
@@ -198,7 +202,7 @@ export default function HomePage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-2">เส้นทางยอดนิยม</h2>
               <p className="text-gray-500">วางแผนเดินทางด้วย EV ได้เลยในคลิกเดียว</p>
             </div>
-            <Link href="/map" className="hidden md:flex items-center gap-1 text-sm text-green-600 font-semibold hover:underline">
+            <Link href="/map" className="hidden md:flex items-center gap-1 text-sm text-cyan-600 font-semibold hover:underline">
               ดูทั้งหมด <ChevronRight size={15} />
             </Link>
           </div>
@@ -207,11 +211,11 @@ export default function HomePage() {
               <Link
                 key={`${r.from}-${r.to}`}
                 href="/map"
-                className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-green-200 hover:shadow-md transition-all group"
+                className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-cyan-200 hover:shadow-md transition-all group"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex flex-col items-center gap-1">
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
                     <div className="w-0.5 h-5 bg-gray-200" />
                     <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
                   </div>
@@ -223,7 +227,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-50">
                   <span className="font-medium">{r.dist} กม.</span>
-                  <span className={`flex items-center gap-1 font-semibold ${r.stops === 0 ? "text-green-600" : "text-blue-600"}`}>
+                  <span className={`flex items-center gap-1 font-semibold ${r.stops === 0 ? "text-cyan-600" : "text-blue-600"}`}>
                     <Zap size={11} />
                     {r.stops === 0 ? "ไม่ต้องแวะชาร์จ" : `แวะชาร์จ ${r.stops} จุด`}
                   </span>
@@ -243,8 +247,8 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
           {WHY_EV.map((w) => (
             <div key={w.title} className="text-center p-6 rounded-2xl bg-gray-50">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <w.icon size={22} className="text-green-600" />
+              <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <w.icon size={22} className="text-cyan-600" />
               </div>
               <h3 className="font-bold text-gray-900 mb-2 text-sm">{w.title}</h3>
               <p className="text-xs text-gray-500 leading-relaxed">{w.desc}</p>
@@ -268,16 +272,18 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-green-500 py-20">
+      <section className="py-20" style={{ background: "#0A0F1A" }}>
         <div className="max-w-6xl mx-auto px-5 text-center">
-          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Zap size={28} className="text-white" fill="white" />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            style={{ background: "rgba(0,200,255,0.15)" }}>
+            <Zap size={28} style={{ color: "#00C8FF" }} fill="currentColor" />
           </div>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">พร้อมเดินทางด้วย EV แล้วหรือยัง?</h2>
-          <p className="text-green-100 mb-8 max-w-md mx-auto">เปิดแผนที่ฟรี ไม่ต้องสมัครสมาชิก ค้นหาจุดชาร์จได้ทันที</p>
+          <p className="mb-8 max-w-md mx-auto" style={{ color: "rgba(255,255,255,0.5)" }}>เปิดแผนที่ฟรี ไม่ต้องสมัครสมาชิก ค้นหาจุดชาร์จได้ทันที</p>
           <Link
             href="/map"
-            className="inline-flex items-center gap-2 bg-white text-green-600 font-bold px-8 py-4 rounded-2xl hover:bg-green-50 transition-colors text-base shadow-xl"
+            className="inline-flex items-center gap-2 font-bold px-8 py-4 rounded-2xl transition-colors text-base shadow-xl"
+            style={{ background: "#00C8FF", color: "#0A0F1A" }}
           >
             <MapPin size={18} />เปิดแผนที่จุดชาร์จ
             <ArrowRight size={16} />
@@ -286,13 +292,13 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-950 text-gray-400 py-12">
+      <footer className="text-gray-400 py-12" style={{ background: "#080C14" }}>
         <div className="max-w-6xl mx-auto px-5">
           <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-10">
             <div>
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center">
-                  <Zap size={17} className="text-white" fill="white" />
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#00C8FF" }}>
+                  <Zap size={17} className="text-gray-900" fill="currentColor" />
                 </div>
                 <span className="font-bold text-white text-sm">EV Charge Map Thailand</span>
               </div>
@@ -312,7 +318,7 @@ export default function HomePage() {
           <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-600">
             <p>© 2026 EV Charge Map Thailand · ข้อมูลจาก <a href="https://www.openstreetmap.org" className="hover:text-gray-400 underline">OpenStreetMap</a></p>
             <div className="flex items-center gap-1">
-              <Star size={11} className="text-green-500" fill="currentColor" />
+              <Star size={11} style={{ color: "#00C8FF" }} fill="currentColor" />
               <span>Made in Thailand</span>
             </div>
           </div>
