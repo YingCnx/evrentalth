@@ -170,9 +170,9 @@ export default function HomePage() {
       <section className="relative overflow-hidden" style={{ minHeight: 560 }}>
         {/* Background image — full width */}
         <NextImage src="/hero-new.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="100vw" priority />
-        {/* Overlay — ซ้าย solid 100% ค่อย fade ไปขวา */}
+        {/* Overlay บาง ๆ เฉพาะซ้ายให้ text อ่านออก */}
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: "linear-gradient(90deg, #050a16 0%, #050a16 42%, rgba(5,10,22,0.80) 62%, rgba(5,10,22,0.15) 82%, transparent 100%)" }} />
+          style={{ background: "linear-gradient(90deg, rgba(5,10,22,0.55) 0%, rgba(5,10,22,0.30) 45%, transparent 70%)" }} />
 
         {/* Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-10 py-20 lg:py-28 flex flex-col justify-center" style={{ minHeight: 560 }}>
