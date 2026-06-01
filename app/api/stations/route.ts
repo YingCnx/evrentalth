@@ -221,7 +221,8 @@ out center body;
         "Accept": "application/json",
       },
       body: `data=${encodeURIComponent(query)}`,
-      next: { revalidate: 600 },
+      // province queries: 10 min, full-Thailand: 1 hour
+      next: { revalidate: province ? 600 : 3600 },
     });
 
     if (!res.ok) throw new Error(`Overpass error: ${res.status}`);
@@ -269,7 +270,13 @@ out center body;
       .filter((el) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon))
       .map(osmToStation);
 
-    return NextResponse.json(stations);
+    return NextResponse.json(stations, {
+      headers: {
+        "Cache-Control": province
+          ? "public, s-maxage=600, stale-while-revalidate=300"
+          : "public, s-maxage=3600, stale-while-revalidate=1800",
+      },
+    });
   } catch (err) {
     console.error("Overpass error:", err);
     return NextResponse.json({ error: "Failed to fetch stations" }, { status: 500 });

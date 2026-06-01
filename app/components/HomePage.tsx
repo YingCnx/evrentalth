@@ -120,7 +120,26 @@ export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [searchVal, setSearchVal] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailStatus, setEmailStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const router = useRouter();
+
+  const handleNewsletter = async () => {
+    if (!email.trim()) return;
+    setEmailStatus("loading");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error();
+      setEmailStatus("ok");
+      setEmail("");
+    } catch {
+      setEmailStatus("error");
+    }
+  };
 
   const handleSearch = () => {
     const val = searchVal.trim();
@@ -661,16 +680,31 @@ export default function HomePage() {
             <div>
               <p className="text-white font-semibold text-sm mb-3">ติดตามข่าวสารและอัปเดต</p>
               <p className="text-xs text-gray-500 mb-3">รับข่าวสารและอัปเดตจุดชาร์จ EV ก่อนใคร</p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="อีเมลของคุณ"
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-cyan-500 transition-colors"
-                />
-                <button className="bg-cyan-400 hover:bg-cyan-300 text-gray-900 text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
-                  ติดตาม
-                </button>
-              </div>
+              {emailStatus === "ok" ? (
+                <p className="text-xs text-cyan-400 font-semibold">ลงทะเบียนสำเร็จ! ขอบคุณครับ</p>
+              ) : (
+                <>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleNewsletter()}
+                      placeholder="อีเมลของคุณ"
+                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-cyan-500 transition-colors"
+                    />
+                    <button
+                      onClick={handleNewsletter}
+                      disabled={emailStatus === "loading"}
+                      className="bg-cyan-400 hover:bg-cyan-300 disabled:opacity-50 text-gray-900 text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
+                      {emailStatus === "loading" ? "..." : "ติดตาม"}
+                    </button>
+                  </div>
+                  {emailStatus === "error" && (
+                    <p className="text-xs text-red-400 mt-1">เกิดข้อผิดพลาด กรุณาลองใหม่</p>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
