@@ -1,7 +1,8 @@
 "use client";
 
-import { Zap, MapPin, Navigation2 } from "lucide-react";
+import { Zap, MapPin, Navigation2, ArrowLeft } from "lucide-react";
 import type { Station } from "./StationCard";
+import StationCard from "./StationCard";
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371;
@@ -21,14 +22,23 @@ function distLabel(km: number) {
   return `${Math.round(km)} กม.`;
 }
 
+// Better connector label: strips parentheses, keeps first 2 words
+function connLabel(title: string, kw?: number) {
+  const clean = title.replace(/\(.*?\)/g, "").trim();
+  const parts = clean.split(" ").filter(Boolean);
+  // e.g. "Type 2" not just "Type"
+  const name = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : parts[0] ?? "EV";
+  return kw ? `${name} · ${kw}kW` : name;
+}
+
 function ConnTag({ title, kw }: { title: string; kw?: number }) {
-  const isDC = /ccs|chademo|dc/i.test(title);
+  const isDC = /ccs|chademo|dc|gb.t dc/i.test(title);
   const isFast = kw && kw >= 50;
   return (
     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
       isFast ? "bg-orange-50 text-orange-500" : isDC ? "bg-blue-50 text-blue-500" : "bg-green-50 text-green-600"
     }`}>
-      {title.split(" ")[0]}{kw ? ` ${kw}kW` : ""}
+      {connLabel(title, kw)}
     </span>
   );
 }
@@ -38,9 +48,10 @@ type Props = {
   userCoords: [number, number] | null;
   selected: Station | null;
   onSelect: (s: Station) => void;
+  onClose: () => void;
 };
 
-export default function StationList({ stations, userCoords, selected, onSelect }: Props) {
+export default function StationList({ stations, userCoords, selected, onSelect, onClose }: Props) {
   const origin = userCoords ?? [13.7563, 100.5018];
 
   const sorted = [...stations]
@@ -51,23 +62,43 @@ export default function StationList({ stations, userCoords, selected, onSelect }
     .sort((a, b) => a.km - b.km)
     .slice(0, 10);
 
+  // When a station is selected → show card inside sidebar
+  if (selected) {
+    return (
+      <aside className="hidden md:flex flex-col w-64 xl:w-72 bg-white border-l border-gray-100 flex-shrink-0 overflow-hidden">
+        {/* Back button */}
+        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft size={14} />
+            กลับรายการ
+          </button>
+        </div>
+        {/* Card inside sidebar — no floating overlay */}
+        <div className="flex-1 overflow-y-auto p-3">
+          <StationCard station={selected} onClose={onClose} />
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="hidden md:flex flex-col w-64 xl:w-72 bg-white border-l border-gray-100 flex-shrink-0 overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-gray-100">
+      <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Navigation2 size={14} className="text-green-500" />
             <span className="text-sm font-semibold text-gray-800">ใกล้ฉัน</span>
           </div>
           <span className="text-[11px] text-gray-400">
-            {userCoords ? "GPS" : "ค่าเริ่มต้น กทม."}
+            {userCoords ? "ใช้ GPS" : "ค่าเริ่มต้น กทม."}
           </span>
         </div>
         {!userCoords && (
-          <p className="text-[10px] text-gray-400 mt-1">
-            อนุญาต GPS เพื่อตำแหน่งที่แม่นยำ
-          </p>
+          <p className="text-[10px] text-gray-400 mt-1">อนุญาต GPS เพื่อตำแหน่งที่แม่นยำ</p>
         )}
       </div>
 
@@ -88,35 +119,25 @@ export default function StationList({ stations, userCoords, selected, onSelect }
               <button
                 key={s.ID}
                 onClick={() => onSelect(s)}
-                className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors group relative ${
-                  isActive ? "bg-green-50" : ""
-                }`}
+                className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors group relative ${isActive ? "bg-green-50" : ""}`}
               >
-                {isActive && (
-                  <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-green-500 rounded-r" />
-                )}
+                {isActive && <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-green-500 rounded-r" />}
 
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                    {/* Number */}
-                    <span className={`flex-shrink-0 text-[11px] font-bold w-5 text-right pt-0.5 ${
-                      i === 0 ? "text-green-500" : "text-gray-300"
-                    }`}>
+                    <span className={`flex-shrink-0 text-[11px] font-bold w-5 text-right pt-0.5 ${i === 0 ? "text-green-500" : "text-gray-300"}`}>
                       {i + 1}
                     </span>
-
                     <div className="min-w-0">
                       <p className={`text-xs font-medium truncate leading-snug ${isActive ? "text-green-700" : "text-gray-800"}`}>
                         {s.AddressInfo.Title}
                       </p>
-
                       {s.AddressInfo.Town && (
                         <p className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5 truncate">
                           <MapPin size={9} />
                           {s.AddressInfo.Town}
                         </p>
                       )}
-
                       {conn && (
                         <div className="mt-1.5">
                           <ConnTag title={conn.ConnectionType?.Title ?? "EV"} kw={conn.PowerKW} />

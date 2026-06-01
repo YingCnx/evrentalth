@@ -30,9 +30,7 @@ export default function SearchFilter({ onFilter, stationCount }: Props) {
   const [province, setProvince] = useState("");
   const [chargerType, setChargerType] = useState("");
 
-  const apply = (p = province, c = chargerType) => {
-    onFilter({ province: p, chargerType: c });
-  };
+  const apply = (p = province, c = chargerType) => onFilter({ province: p, chargerType: c });
 
   const reset = () => {
     setProvince("");
@@ -59,21 +57,24 @@ export default function SearchFilter({ onFilter, stationCount }: Props) {
         </select>
       </div>
 
-      {/* Charger type pills */}
+      {/* Charger type pills — "ทุกประเภท" highlights when no filter */}
       <div className="flex items-center gap-1">
-        {CHARGER_TYPES.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => { setChargerType(t.value); apply(province, t.value); }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              chargerType === t.value
-                ? "bg-green-500 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {CHARGER_TYPES.map((t) => {
+          const isActive = chargerType === t.value;
+          return (
+            <button
+              key={t.value}
+              onClick={() => { setChargerType(t.value); apply(province, t.value); }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                isActive
+                  ? "bg-green-500 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Station count */}
@@ -81,7 +82,7 @@ export default function SearchFilter({ onFilter, stationCount }: Props) {
         <span className="font-semibold text-gray-700">{stationCount}</span> สถานี
       </span>
 
-      {/* Clear */}
+      {/* Clear — only show when non-default filter active */}
       {hasFilter && (
         <button
           onClick={reset}

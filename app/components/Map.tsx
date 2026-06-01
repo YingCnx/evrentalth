@@ -9,9 +9,10 @@ type Props = {
   onSelect: (s: Station) => void;
   selected: Station | null;
   focusCoords?: [number, number];
+  resetView?: boolean;
 };
 
-export default function Map({ stations, onSelect, selected, focusCoords }: Props) {
+export default function Map({ stations, onSelect, selected, focusCoords, resetView }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [map, setMap] = useState<any>(null);
@@ -93,7 +94,7 @@ export default function Map({ stations, onSelect, selected, focusCoords }: Props
     map.panTo([Latitude, Longitude], { animate: true });
   }, [map, selected]);
 
-  // Fly to province focus or fit bounds of all stations
+  // Fly to province or fit bounds of stations
   useEffect(() => {
     if (!map) return;
     if (focusCoords) {
@@ -110,7 +111,7 @@ export default function Map({ stations, onSelect, selected, focusCoords }: Props
         map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12, animate: true });
       });
     }
-  }, [map, stations, focusCoords]);
+  }, [map, stations, focusCoords, resetView]);
 
   return (
     <div
