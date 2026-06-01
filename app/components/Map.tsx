@@ -51,7 +51,6 @@ export default function Map({ stations, onSelect, selected }: Props) {
 
     return () => {
       instance?.remove();
-      initRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

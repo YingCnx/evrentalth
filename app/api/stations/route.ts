@@ -1,116 +1,197 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const OCMAP_API = "https://api.openchargemap.io/v3/poi";
-const API_KEY = process.env.OCMAP_API_KEY ?? "";
+const OVERPASS = "https://overpass-api.de/api/interpreter";
 
-// Mock data — used when no API key is configured
-const MOCK_STATIONS = [
-  {
-    ID: 1001,
-    AddressInfo: { Title: "EA Anywhere — CentralWorld", AddressLine1: "999/9 ถ.พระรามที่ 1", Town: "ปทุมวัน", StateOrProvince: "กรุงเทพมหานคร", Latitude: 13.7466, Longitude: 100.5394, ContactTelephone1: "02-101-1234" },
-    Connections: [{ ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 50, Quantity: 2 }, { ConnectionType: { Title: "CHAdeMO" }, PowerKW: 50, Quantity: 2 }],
-    OperatorInfo: { Title: "EA Anywhere", WebsiteURL: "https://www.eaanywhere.com" },
+// Thailand bounding box: south, west, north, east
+const TH_BBOX = "5.5,97.3,20.5,105.7";
+
+const PROVINCE_COORDS: Record<string, [number, number]> = {
+  "กรุงเทพมหานคร": [13.7563, 100.5018],
+  "เชียงใหม่": [18.7883, 98.9853],
+  "ภูเก็ต": [7.8804, 98.3923],
+  "ชลบุรี": [13.3611, 100.9847],
+  "ขอนแก่น": [16.4322, 102.8236],
+  "นครราชสีมา": [14.9798, 102.0978],
+  "เชียงราย": [19.9105, 99.8406],
+  "อุดรธานี": [17.4138, 102.7872],
+  "สุราษฎร์ธานี": [9.1382, 99.3211],
+  "นครศรีธรรมราช": [8.4304, 99.9631],
+  "หาดใหญ่": [7.0062, 100.4747],
+  "ระยอง": [12.6814, 101.2816],
+  "นนทบุรี": [13.8622, 100.5134],
+  "ปทุมธานี": [14.0208, 100.5259],
+  "สมุทรปราการ": [13.5990, 100.5998],
+};
+
+type OsmElement = {
+  type: "node" | "way" | "relation";
+  id: number;
+  lat?: number;
+  lon?: number;
+  center?: { lat: number; lon: number };
+  tags?: Record<string, string>;
+};
+
+const SOCKET_MAP: Record<string, string> = {
+  "socket:type2": "Type 2 (AC)",
+  "socket:type1": "Type 1 (AC)",
+  "socket:ccs2": "CCS2 (DC)",
+  "socket:type2_combo": "CCS2 (DC)",
+  "socket:chademo": "CHAdeMO (DC)",
+  "socket:tesla_supercharger": "Tesla Supercharger",
+  "socket:tesla_destination": "Tesla Destination",
+  "socket:type3c": "Type 3C",
+  "socket:gb_t_dc": "GB/T (DC)",
+  "socket:gb_t_ac": "GB/T (AC)",
+};
+
+function osmToStation(el: OsmElement) {
+  const tags = el.tags ?? {};
+  const lat = el.lat ?? el.center?.lat ?? 0;
+  const lon = el.lon ?? el.center?.lon ?? 0;
+
+  // Build connections from socket tags
+  const connections: {
+    ConnectionType: { Title: string };
+    PowerKW?: number;
+    Quantity?: number;
+  }[] = [];
+
+  for (const [key, label] of Object.entries(SOCKET_MAP)) {
+    const val = tags[key];
+    if (!val || val === "0" || val === "no") continue;
+    const qty = parseInt(val) || 1;
+    const outputRaw = tags[`${key}:output`] ?? tags["charging_station:output"] ?? "";
+    const powerKw = outputRaw ? parseFloat(outputRaw.replace(/[^0-9.]/g, "")) || undefined : undefined;
+    connections.push({ ConnectionType: { Title: label }, PowerKW: powerKw, Quantity: qty });
+  }
+
+  // Fallback: generic charger if no socket tags
+  if (connections.length === 0) {
+    const capacity = parseInt(tags.capacity ?? "0") || 1;
+    const output = tags["charging_station:output"] ?? "";
+    const kw = output ? parseFloat(output.replace(/[^0-9.]/g, "")) || undefined : undefined;
+    connections.push({ ConnectionType: { Title: "EV Charger" }, PowerKW: kw, Quantity: capacity });
+  }
+
+  // Friendly name
+  const title =
+    tags.name ||
+    tags["name:en"] ||
+    tags.operator ||
+    tags.brand ||
+    "EV Charging Station";
+
+  const address = [
+    tags["addr:housenumber"],
+    tags["addr:street"] ?? tags["addr:full"],
+  ].filter(Boolean).join(" ") || undefined;
+
+  const town = tags["addr:city"] ?? tags["addr:district"] ?? tags["addr:subdistrict"] ?? undefined;
+  const province = tags["addr:province"] ?? tags["addr:state"] ?? undefined;
+
+  const fee = tags.fee === "no" ? "ฟรี / Free" : tags.charge ? `฿${tags.charge}` : tags.fee === "yes" ? "มีค่าบริการ" : undefined;
+
+  return {
+    ID: el.id,
+    AddressInfo: {
+      Title: title,
+      AddressLine1: address,
+      Town: town,
+      StateOrProvince: province,
+      Latitude: lat,
+      Longitude: lon,
+      ContactTelephone1: tags.phone ?? tags["contact:phone"] ?? undefined,
+    },
+    Connections: connections,
+    OperatorInfo: tags.operator ? { Title: tags.operator, WebsiteURL: tags.website ?? tags["contact:website"] ?? undefined } : undefined,
     StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿6.50/kWh",
-  },
-  {
-    ID: 1002,
-    AddressInfo: { Title: "PEA Volta — สยามพารากอน", AddressLine1: "991 ถ.พระรามที่ 1", Town: "ปทุมวัน", StateOrProvince: "กรุงเทพมหานคร", Latitude: 13.7459, Longitude: 100.5347 },
-    Connections: [{ ConnectionType: { Title: "Type 2 (AC)" }, PowerKW: 22, Quantity: 4 }],
-    OperatorInfo: { Title: "PEA Volta" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿5.00/kWh",
-  },
-  {
-    ID: 1003,
-    AddressInfo: { Title: "EVOLT — เซ็นทรัลพลาซา แจ้งวัฒนะ", AddressLine1: "99/9 ถ.แจ้งวัฒนะ", Town: "ปากเกร็ด", StateOrProvince: "นนทบุรี", Latitude: 13.8960, Longitude: 100.5344 },
-    Connections: [{ ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 120, Quantity: 2 }, { ConnectionType: { Title: "Type 2 (AC)" }, PowerKW: 22, Quantity: 4 }],
-    OperatorInfo: { Title: "EVOLT" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿7.00/kWh",
-  },
-  {
-    ID: 1004,
-    AddressInfo: { Title: "OR EV Station — PTT สาขาเชียงใหม่", AddressLine1: "123 ถ.นิมมานเหมินท์", Town: "สุเทพ", StateOrProvince: "เชียงใหม่", Latitude: 18.7993, Longitude: 98.9680 },
-    Connections: [{ ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 60, Quantity: 2 }, { ConnectionType: { Title: "CHAdeMO" }, PowerKW: 60, Quantity: 1 }],
-    OperatorInfo: { Title: "OR (PTT Oil Retail)" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿6.00/kWh",
-  },
-  {
-    ID: 1005,
-    AddressInfo: { Title: "EA Anywhere — Central Festival Phuket", AddressLine1: "74-75 ถ.เจ้าฟ้า", Town: "กะทู้", StateOrProvince: "ภูเก็ต", Latitude: 7.9061, Longitude: 98.3595 },
-    Connections: [{ ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 50, Quantity: 2 }, { ConnectionType: { Title: "Type 2 (AC)" }, PowerKW: 22, Quantity: 2 }],
-    OperatorInfo: { Title: "EA Anywhere", WebsiteURL: "https://www.eaanywhere.com" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿6.50/kWh",
-  },
-  {
-    ID: 1006,
-    AddressInfo: { Title: "Sharge — Pattaya Avenue", AddressLine1: "คืนสุข 13", Town: "พัทยาเหนือ", StateOrProvince: "ชลบุรี", Latitude: 12.9377, Longitude: 100.8820 },
-    Connections: [{ ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 180, Quantity: 4 }],
-    OperatorInfo: { Title: "Sharge" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿7.50/kWh",
-  },
-  {
-    ID: 1007,
-    AddressInfo: { Title: "EA Anywhere — Central Plaza Khon Kaen", AddressLine1: "99/9 ถ.ศรีจันทร์", Town: "เมืองขอนแก่น", StateOrProvince: "ขอนแก่น", Latitude: 16.4322, Longitude: 102.8236 },
-    Connections: [{ ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 50, Quantity: 2 }],
-    OperatorInfo: { Title: "EA Anywhere" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿6.50/kWh",
-  },
-  {
-    ID: 1008,
-    AddressInfo: { Title: "EVOLT — Terminal 21 Korat", AddressLine1: "2/2 ถ.มิตรภาพ", Town: "เมืองนครราชสีมา", StateOrProvince: "นครราชสีมา", Latitude: 14.9741, Longitude: 102.1019 },
-    Connections: [{ ConnectionType: { Title: "Type 2 (AC)" }, PowerKW: 22, Quantity: 4 }, { ConnectionType: { Title: "CCS (Type 2)" }, PowerKW: 60, Quantity: 2 }],
-    OperatorInfo: { Title: "EVOLT" },
-    StatusType: { Title: "Operational", IsOperational: true },
-    UsageCost: "฿6.00/kWh",
-  },
-];
+    UsageCost: fee,
+    AccessComments: tags.opening_hours ?? undefined,
+    // Extra OSM tags for display
+    _osm: {
+      access: tags.access,
+      network: tags.network,
+    },
+  };
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
+  const province = searchParams.get("province") ?? "";
+  const chargerType = searchParams.get("chargerType") ?? "";
 
-  // No API key → return mock data
-  if (!API_KEY) {
-    return NextResponse.json(MOCK_STATIONS);
+  // Build bbox or around query
+  let areaQuery: string;
+  if (province && PROVINCE_COORDS[province]) {
+    const [lat, lon] = PROVINCE_COORDS[province];
+    areaQuery = `(around:80000,${lat},${lon})`;
+  } else {
+    areaQuery = `(${TH_BBOX})`;
   }
 
-  const params = new URLSearchParams({
-    output: "json",
-    countrycode: "TH",
-    maxresults: searchParams.get("maxresults") ?? "100",
-    compact: "true",
-    verbose: "false",
-    key: API_KEY,
-  });
+  // Charger type filter
+  let socketFilter = "";
+  if (chargerType === "ac") socketFilter = '["socket:type2"]["socket:type2"!="0"]';
+  else if (chargerType === "dc") socketFilter = '["socket:chademo"]|["socket:ccs2"]|["socket:type2_combo"]';
+  else if (chargerType === "fast") socketFilter = '["charging_station:output"~"[5-9][0-9]+|[1-9][0-9]{2,}"]';
 
-  const latitude = searchParams.get("latitude");
-  const longitude = searchParams.get("longitude");
-  const distance = searchParams.get("distance");
-  const connectiontypeid = searchParams.get("connectiontypeid");
-  const levelid = searchParams.get("levelid");
-
-  if (latitude) params.set("latitude", latitude);
-  if (longitude) params.set("longitude", longitude);
-  if (distance) params.set("distance", distance);
-  if (connectiontypeid) params.set("connectiontypeid", connectiontypeid);
-  if (levelid) params.set("levelid", levelid);
+  const query = `
+[out:json][timeout:30];
+(
+  node["amenity"="charging_station"]${areaQuery};
+  way["amenity"="charging_station"]${areaQuery};
+);
+out center body;
+  `.trim();
 
   try {
-    const res = await fetch(`${OCMAP_API}?${params}`, {
-      next: { revalidate: 300 },
+    const res = await fetch(OVERPASS, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "EVChargeMapThailand/1.0 (educational project)",
+        "Accept": "application/json",
+      },
+      body: `data=${encodeURIComponent(query)}`,
+      next: { revalidate: 600 },
     });
 
-    if (!res.ok) throw new Error(`OCMAP error: ${res.status}`);
+    if (!res.ok) throw new Error(`Overpass error: ${res.status}`);
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    const json = await res.json();
+    let elements: OsmElement[] = json.elements ?? [];
+
+    // Client-side charger type filter (more reliable than Overpass regex)
+    if (chargerType === "ac") {
+      elements = elements.filter((el) =>
+        Object.keys(el.tags ?? {}).some((k) => ["socket:type2", "socket:type1"].includes(k) && (el.tags?.[k] ?? "0") !== "0")
+      );
+    } else if (chargerType === "dc") {
+      elements = elements.filter((el) =>
+        Object.keys(el.tags ?? {}).some((k) => ["socket:chademo", "socket:ccs2", "socket:type2_combo"].includes(k) && (el.tags?.[k] ?? "0") !== "0")
+      );
+    } else if (chargerType === "fast") {
+      elements = elements.filter((el) => {
+        const output = el.tags?.["charging_station:output"] ?? "";
+        const kw = parseFloat(output.replace(/[^0-9.]/g, ""));
+        if (kw >= 50) return true;
+        // Also check individual socket outputs
+        return Object.keys(el.tags ?? {}).some((k) => {
+          if (!k.includes(":output")) return false;
+          const v = parseFloat((el.tags?.[k] ?? "").replace(/[^0-9.]/g, ""));
+          return v >= 50;
+        });
+      });
+    }
+
+    const stations = elements
+      .filter((el) => (el.lat ?? el.center?.lat) && (el.lon ?? el.center?.lon))
+      .map(osmToStation);
+
+    return NextResponse.json(stations);
   } catch (err) {
-    console.error(err);
+    console.error("Overpass error:", err);
     return NextResponse.json({ error: "Failed to fetch stations" }, { status: 500 });
   }
 }

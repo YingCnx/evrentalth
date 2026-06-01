@@ -33,6 +33,7 @@ export default function SearchFilter({ onFilter, stationCount }: Props) {
 
   const apply = (p = province, c = chargerType) => {
     onFilter({ province: p, chargerType: c });
+    setOpen(false);
   };
 
   const reset = () => {
