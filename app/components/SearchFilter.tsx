@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 
 export type FilterState = {
   province: string;
-  chargerType: string; // "" | "ac" | "dc" | "fast"
+  chargerType: string;
 };
 
 const PROVINCES = [
@@ -15,10 +15,10 @@ const PROVINCES = [
 ];
 
 const CHARGER_TYPES = [
-  { value: "", label: "ทุกประเภท / All Types" },
-  { value: "ac", label: "AC (Type 1 / Type 2)" },
-  { value: "dc", label: "DC (CHAdeMO / CCS)" },
-  { value: "fast", label: "Fast Charge (50kW+)" },
+  { value: "", label: "ทุกประเภท" },
+  { value: "ac", label: "AC" },
+  { value: "dc", label: "DC" },
+  { value: "fast", label: "Fast 50kW+" },
 ];
 
 type Props = {
@@ -29,11 +29,9 @@ type Props = {
 export default function SearchFilter({ onFilter, stationCount }: Props) {
   const [province, setProvince] = useState("");
   const [chargerType, setChargerType] = useState("");
-  const [open, setOpen] = useState(false);
 
   const apply = (p = province, c = chargerType) => {
     onFilter({ province: p, chargerType: c });
-    setOpen(false);
   };
 
   const reset = () => {
@@ -45,69 +43,54 @@ export default function SearchFilter({ onFilter, stationCount }: Props) {
   const hasFilter = province || chargerType;
 
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 flex flex-col gap-3">
-      {/* Search bar */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <select
-            value={province}
-            onChange={(e) => { setProvince(e.target.value); apply(e.target.value, chargerType); }}
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white appearance-none cursor-pointer"
-            aria-label="ค้นหาตามจังหวัด"
-          >
-            <option value="">ทุกจังหวัด / All Provinces</option>
-            {PROVINCES.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          onClick={() => setOpen(!open)}
-          className={`p-2.5 rounded-xl border transition-colors ${open ? "bg-green-500 text-white border-green-500" : "border-gray-200 text-gray-600 hover:border-green-400"}`}
-          aria-label="ตัวกรอง"
+    <div className="flex items-center gap-2">
+      {/* Province select */}
+      <div className="relative flex-1 max-w-xs">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <select
+          value={province}
+          onChange={(e) => { setProvince(e.target.value); apply(e.target.value, chargerType); }}
+          className="w-full pl-8 pr-8 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500 cursor-pointer"
+          aria-label="เลือกจังหวัด"
         >
-          <SlidersHorizontal size={18} />
-        </button>
-
-        {hasFilter && (
-          <button
-            onClick={reset}
-            className="p-2.5 rounded-xl border border-red-200 text-red-400 hover:bg-red-50 transition-colors"
-            aria-label="ล้างตัวกรอง"
-          >
-            <X size={18} />
-          </button>
-        )}
+          <option value="">ทุกจังหวัด</option>
+          {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
       </div>
 
-      {/* Charger type filter */}
-      {open && (
-        <div className="flex flex-wrap gap-2 pt-1">
-          {CHARGER_TYPES.map((t) => (
-            <button
-              key={t.value}
-              onClick={() => { setChargerType(t.value); apply(province, t.value); }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                chargerType === t.value
-                  ? "bg-green-500 text-white border-green-500"
-                  : "border-gray-200 text-gray-600 hover:border-green-400"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Charger type pills */}
+      <div className="flex items-center gap-1">
+        {CHARGER_TYPES.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => { setChargerType(t.value); apply(province, t.value); }}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              chargerType === t.value
+                ? "bg-green-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {/* Station count */}
-      <p className="text-xs text-gray-400">
-        พบ <span className="font-semibold text-green-600">{stationCount}</span> สถานี
-        {province && ` ใน${province}`}
-        {" "}/ Found <span className="font-semibold text-green-600">{stationCount}</span> stations
-        {province && ` in ${province}`}
-      </p>
+      <span className="text-xs text-gray-400 whitespace-nowrap hidden lg:block">
+        <span className="font-semibold text-gray-700">{stationCount}</span> สถานี
+      </span>
+
+      {/* Clear */}
+      {hasFilter && (
+        <button
+          onClick={reset}
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          aria-label="ล้างตัวกรอง"
+        >
+          <X size={15} />
+        </button>
+      )}
     </div>
   );
 }

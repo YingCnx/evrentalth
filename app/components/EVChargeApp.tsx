@@ -99,16 +99,22 @@ export default function EVChargeApp() {
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Top bar */}
-      <header className="bg-white shadow-sm z-20 px-4 py-3 flex items-center gap-3">
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="bg-green-500 text-white p-1.5 rounded-lg">
-            <Zap size={18} fill="white" />
+      <header className="bg-white border-b border-gray-100 z-20 px-5 py-3 flex items-center gap-4">
+        {/* Logo */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center">
+            <Zap size={15} className="text-white" fill="white" />
           </div>
-          <div className="leading-tight">
-            <p className="font-bold text-sm text-gray-800">EV Charge Map</p>
-            <p className="text-[10px] text-gray-400">Thailand</p>
+          <div className="leading-none">
+            <p className="font-bold text-sm text-gray-900 tracking-tight">EV Charge Map</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Thailand</p>
           </div>
         </div>
+
+        {/* Divider */}
+        <div className="w-px h-6 bg-gray-200 flex-shrink-0" />
+
+        {/* Search & Filter */}
         <div className="flex-1 min-w-0">
           <SearchFilter onFilter={handleFilter} stationCount={stations.length} />
         </div>
@@ -167,14 +173,14 @@ export default function EVChargeApp() {
           )}
 
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow text-xs text-gray-500 space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-500 inline-block" />
-              จุดชาร์จ / Charging Station
+          <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 space-y-1.5">
+            <div className="flex items-center gap-2 text-[11px] text-gray-500">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+              จุดชาร์จ
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-orange-400 inline-block" />
-              สถานีที่เลือก / Selected
+            <div className="flex items-center gap-2 text-[11px] text-gray-500">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-400" />
+              เลือกอยู่
             </div>
           </div>
 
@@ -199,13 +205,15 @@ export default function EVChargeApp() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 px-4 py-2 text-center">
+      <footer className="bg-white border-t border-gray-100 px-5 py-2 flex items-center justify-between">
+        <p className="text-[10px] text-gray-400">
+          © 2026 EV Charge Map Thailand
+        </p>
         <p className="text-[10px] text-gray-400">
           ข้อมูลจาก{" "}
-          <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-600">
+          <a href="https://www.openstreetmap.org" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 underline transition-colors">
             OpenStreetMap
-          </a>{" "}
-          · จุดชาร์จรถไฟฟ้าทั่วไทย · EV Charging Stations Thailand
+          </a>
         </p>
       </footer>
     </div>
