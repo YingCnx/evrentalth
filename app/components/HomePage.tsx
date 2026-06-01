@@ -3,7 +3,6 @@
 import Link from "next/link";
 import NextImage from "next/image";
 import { useRef, useState } from "react";
-import dynamic from "next/dynamic";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -16,7 +15,13 @@ import { EV_CARS } from "../lib/cars";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const HeroMap = dynamic(() => import("./HeroMap"), { ssr: false, loading: () => <div className="w-full h-full bg-gray-100 animate-pulse" /> });
+const NETWORKS = [
+  { name: "EA Anywhere", count: 1245, color: "#22d3ee" },
+  { name: "EV Station PluZ", count: 892, color: "#a78bfa" },
+  { name: "PEA VOLTA", count: 624, color: "#34d399" },
+  { name: "EleXA", count: 298, color: "#f97316" },
+  { name: "PTT EV Station", count: 267, color: "#fbbf24" },
+];
 
 const STATS_BAR = [
   { icon: Zap, value: "3,200+", label: "จุดชาร์จทั่วไทย" },
@@ -232,12 +237,30 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right — live map */}
-          <div className="hidden lg:block relative bg-gray-100">
-            <HeroMap />
+          {/* Right — hero image */}
+          <div className="hidden lg:block relative overflow-hidden">
+            <NextImage src="/hero.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="50vw" priority />
             {/* Left fade overlay */}
-            <div className="absolute inset-y-0 left-0 w-16 pointer-events-none z-[300]"
+            <div className="absolute inset-y-0 left-0 w-24 pointer-events-none z-10"
               style={{ background: "linear-gradient(90deg, white, transparent)" }} />
+            {/* Network stats card */}
+            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur rounded-xl shadow-lg p-3 z-10 min-w-[190px]">
+              <p className="font-bold text-gray-800 mb-2 text-xs">เครือข่ายผู้ให้บริการ</p>
+              {NETWORKS.map((n) => (
+                <div key={n.name} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.color }} />
+                    <span className="text-[11px] text-gray-600">{n.name}</span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-gray-800">{n.count.toLocaleString()}</span>
+                </div>
+              ))}
+              <div className="mt-2 pt-1.5 border-t border-gray-100">
+                <Link href="/chargers" className="text-cyan-600 font-semibold text-[10px] hover:underline">
+                  ดูทั้งหมด 15 เครือข่าย →
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
