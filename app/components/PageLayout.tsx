@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Zap, MapPin, Car, Navigation, Calculator, BookOpen, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const LABELS: Record<string, string> = {
+  map: "แผนที่ชาร์จ", cars: "เปรียบเทียบรถ EV", routes: "เส้นทาง EV",
+  chargers: "เครือข่ายชาร์จ", calculator: "คำนวณคืนทุน", blog: "บทความ",
+  about: "เกี่ยวกับเรา", contact: "ติดต่อเรา", privacy: "นโยบายส่วนตัว",
+  compare: "เปรียบเทียบ", pricing: "ตารางราคา", province: "จังหวัด",
+};
 
 const NAV = [
   { href: "/map", label: "แผนที่ชาร์จ", icon: MapPin },
@@ -17,6 +24,27 @@ const NAV = [
 export default function PageLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // BreadcrumbList JSON-LD
+  useEffect(() => {
+    const siteUrl = "https://evchargemap.th";
+    const segments = pathname.split("/").filter(Boolean);
+    const items = [
+      { "@type": "ListItem", position: 1, name: "หน้าแรก", item: siteUrl },
+      ...segments.map((seg, i) => ({
+        "@type": "ListItem",
+        position: i + 2,
+        name: LABELS[seg] ?? seg,
+        item: `${siteUrl}/${segments.slice(0, i + 1).join("/")}`,
+      })),
+    ];
+    const el = document.getElementById("breadcrumb-schema");
+    const script = el ?? document.createElement("script");
+    script.id = "breadcrumb-schema";
+    (script as HTMLScriptElement).type = "application/ld+json";
+    script.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items });
+    if (!el) document.head.appendChild(script);
+  }, [pathname]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

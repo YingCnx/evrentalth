@@ -1,10 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   Zap, MapPin, Navigation, Calculator, Car, ChevronRight,
   Battery, Clock, Shield, TrendingUp, Star, ArrowRight,
 } from "lucide-react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const STATS = [
   { value: "3,200+", label: "จุดชาร์จทั่วไทย" },
@@ -75,8 +81,31 @@ const WHY_EV = [
 const EV_BRANDS = ["BYD", "MG", "Neta", "Tesla", "GWM", "Volvo", "BMW", "Mercedes", "Audi", "Deepal"];
 
 export default function HomePage() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    // Hero entrance — stagger from bottom
+    gsap.from(".hero-anim", {
+      y: 40, opacity: 0, duration: 0.9, stagger: 0.12, ease: "power3.out",
+    });
+
+    // Stats count-up on scroll
+    gsap.from(".stat-anim", {
+      y: 30, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power2.out",
+      scrollTrigger: { trigger: statsRef.current, start: "top 85%" },
+    });
+
+    // Feature cards slide in
+    gsap.from(".feature-anim", {
+      y: 50, opacity: 0, duration: 0.7, stagger: 0.1, ease: "power2.out",
+      scrollTrigger: { trigger: featuresRef.current, start: "top 80%" },
+    });
+  }, { scope: heroRef });
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" ref={heroRef}>
 
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
@@ -117,21 +146,21 @@ export default function HomePage() {
         <div className="relative max-w-6xl mx-auto px-5 py-24 md:py-32">
           <div className="max-w-2xl">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-6 border"
+            <div className="hero-anim inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-6 border"
               style={{ background: "rgba(0,200,255,0.12)", borderColor: "rgba(0,200,255,0.25)", color: "#00C8FF" }}>
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#00C8FF" }} />
               อัปเดตข้อมูลแบบ real-time
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+            <h1 className="hero-anim text-4xl md:text-6xl font-bold leading-tight mb-6">
               วางแผนเดินทาง<br />
               <span style={{ color: "#00C8FF" }}>ด้วยรถ EV</span><br />
               ให้ง่ายขึ้น
             </h1>
-            <p className="text-lg text-gray-300 leading-relaxed mb-10 max-w-lg">
+            <p className="hero-anim text-lg text-gray-300 leading-relaxed mb-10 max-w-lg">
               แผนที่จุดชาร์จ 3,200+ แห่งทั่วไทย วางแผนเส้นทาง รู้ว่าต้องแวะชาร์จกี่จุด เปรียบเทียบรถ และคำนวณความคุ้ม — ทุกอย่างในที่เดียว
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="hero-anim flex flex-wrap gap-3">
               <Link
                 href="/map"
                 className="flex items-center gap-2 font-bold px-6 py-3.5 rounded-2xl transition-colors text-base shadow-lg"
@@ -153,10 +182,10 @@ export default function HomePage() {
       </section>
 
       {/* Stats */}
-      <section className="border-b border-gray-100 bg-gray-50">
+      <section className="border-b border-gray-100 bg-gray-50" ref={statsRef}>
         <div className="max-w-6xl mx-auto px-5 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
           {STATS.map((s) => (
-            <div key={s.label} className="text-center">
+            <div key={s.label} className="stat-anim text-center">
               <p className="text-3xl font-bold text-gray-900">{s.value}</p>
               <p className="text-sm text-gray-500 mt-1">{s.label}</p>
             </div>
@@ -165,8 +194,8 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="max-w-6xl mx-auto px-5 py-20">
-        <div className="text-center mb-12">
+      <section className="max-w-6xl mx-auto px-5 py-20" ref={featuresRef}>
+        <div className="feature-anim text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-3">เครื่องมือสำหรับชาว EV</h2>
           <p className="text-gray-500 max-w-md mx-auto">ครบทุกอย่างที่ต้องการ ตั้งแต่หาจุดชาร์จ ไปจนถึงตัดสินใจซื้อรถ</p>
         </div>
@@ -175,7 +204,7 @@ export default function HomePage() {
             <Link
               key={f.title}
               href={f.href}
-              className="group border border-gray-100 rounded-2xl p-6 hover:border-cyan-200 hover:shadow-lg transition-all duration-200"
+              className="feature-anim group border border-gray-100 rounded-2xl p-6 hover:border-cyan-200 hover:shadow-lg transition-all duration-200"
               style={{ ["--tw-shadow-color" as string]: "rgba(0,200,255,0.08)" }}
             >
               <div className="flex items-start justify-between mb-4">

@@ -102,20 +102,47 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "EV Charge Map Thailand",
-              alternateName: "แผนที่จุดชาร์จรถไฟฟ้าไทย",
-              url: siteUrl,
-              description:
-                "ค้นหาสถานีชาร์จรถไฟฟ้า (EV Charging Station) ทั่วประเทศไทย — Find EV charging stations across Thailand",
-              applicationCategory: "TravelApplication",
-              operatingSystem: "Any",
-              inLanguage: ["th", "en"],
-              offers: { "@type": "Offer", price: "0", priceCurrency: "THB" },
-              about: {
-                "@type": "Thing",
-                name: "Electric Vehicle Charging Stations in Thailand",
-              },
+              "@graph": [
+                {
+                  "@type": "WebApplication",
+                  name: "EV Charge Map Thailand",
+                  alternateName: "แผนที่จุดชาร์จรถไฟฟ้าไทย",
+                  url: siteUrl,
+                  description: "ค้นหาสถานีชาร์จรถไฟฟ้า (EV Charging Station) ทั่วประเทศไทย — Find EV charging stations across Thailand",
+                  applicationCategory: "TravelApplication",
+                  operatingSystem: "Any",
+                  inLanguage: ["th", "en"],
+                  offers: { "@type": "Offer", price: "0", priceCurrency: "THB" },
+                },
+                {
+                  "@type": "Organization",
+                  "@id": `${siteUrl}/#organization`,
+                  name: "EV Charge Map Thailand",
+                  url: siteUrl,
+                  logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` },
+                  description: "แพลตฟอร์มข้อมูล EV ครบวงจรสำหรับคนไทย แผนที่จุดชาร์จ วางแผนเส้นทาง เปรียบเทียบรถ คำนวณความคุ้ม",
+                  foundingDate: "2024",
+                  areaServed: { "@type": "Country", name: "Thailand" },
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    contactType: "customer service",
+                    email: "hello@evchargemap.th",
+                    availableLanguage: ["Thai", "English"],
+                  },
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": `${siteUrl}/#website`,
+                  name: "EV Charge Map Thailand",
+                  url: siteUrl,
+                  publisher: { "@id": `${siteUrl}/#organization` },
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: { "@type": "EntryPoint", urlTemplate: `${siteUrl}/map?province={search_term_string}` },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+              ],
             }),
           }}
         />
