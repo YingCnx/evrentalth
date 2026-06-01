@@ -166,41 +166,49 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-white" style={{ minHeight: 520 }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 min-h-[520px]">
+      {/* Hero — full bleed */}
+      <section className="relative overflow-hidden" style={{ minHeight: 560 }}>
+        {/* Background image — full width */}
+        <NextImage src="/hero.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="100vw" priority />
+        {/* Overlay — ซ้าย solid 100% ค่อย fade ไปขวา */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(90deg, #050a16 0%, #050a16 42%, rgba(5,10,22,0.80) 62%, rgba(5,10,22,0.15) 82%, transparent 100%)" }} />
 
-          {/* Left — content */}
-          <div className="flex flex-col justify-center px-5 lg:px-10 py-14 lg:py-20 relative z-10">
-            <div className="hero-anim inline-flex items-center gap-2 bg-cyan-50 border border-cyan-200 rounded-full px-3 py-1 text-xs font-semibold text-cyan-700 mb-5 w-fit">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-10 py-20 lg:py-28 flex flex-col justify-center" style={{ minHeight: 560 }}>
+          <div className="max-w-xl">
+            <div className="hero-anim inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold mb-5 w-fit border"
+              style={{ background: "rgba(0,200,255,0.15)", borderColor: "rgba(0,200,255,0.3)", color: "#00C8FF" }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#00C8FF" }} />
               อัปเดตข้อมูลแบบ Real-time
             </div>
 
-            <h1 className="hero-anim text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-4">
+            <h1 className="hero-anim text-4xl md:text-5xl font-bold text-white leading-tight mb-4 drop-shadow-lg">
               ค้นหาสถานีชาร์จ EV<br />
-              <span className="text-cyan-500">ทั่วประเทศไทย</span>
+              <span style={{ color: "#00C8FF" }}>ทั่วประเทศไทย</span>
             </h1>
-            <p className="hero-anim text-base text-gray-500 leading-relaxed mb-6 max-w-md">
+            <p className="hero-anim text-base text-gray-300 leading-relaxed mb-6 max-w-md">
               วางแผนเส้นทางได้ง่าย ค้นหาจุดชาร์จแบบ real-time<br className="hidden md:block" />
               เปรียบเทียบรถ EV และคำนวณค่าใช้จ่ายก่อนเดินทาง
             </p>
 
             {/* Search bar */}
             <div className="hero-anim flex gap-2 mb-4 max-w-md">
-              <div className="flex-1 flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2.5 bg-white shadow-sm focus-within:border-cyan-400 transition-colors">
-                <Search size={15} className="text-gray-400 flex-shrink-0" />
+              <div className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2.5 shadow-lg focus-within:ring-2 focus-within:ring-cyan-400 transition-all"
+                style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.2)" }}>
+                <Search size={15} className="text-gray-300 flex-shrink-0" />
                 <input
                   type="text"
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
                   placeholder="ค้นหาสถานีชาร์จ ใกล้ฉัน หรือ พิมพ์ชื่อสถานที่"
-                  className="text-sm text-gray-700 placeholder-gray-400 bg-transparent outline-none w-full"
+                  className="text-sm text-white placeholder-gray-400 bg-transparent outline-none w-full"
                 />
               </div>
               <Link
                 href={`/map${searchVal ? `?q=${encodeURIComponent(searchVal)}` : ""}`}
-                className="bg-cyan-400 hover:bg-cyan-300 text-gray-900 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
+                className="font-bold text-sm px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
+                style={{ background: "#00C8FF", color: "#08101e" }}
               >
                 ค้นหา
               </Link>
@@ -210,7 +218,8 @@ export default function HomePage() {
             <div className="hero-anim flex flex-wrap gap-2 mb-8">
               {FILTER_CHIPS.map((c) => (
                 <Link key={c.label} href={c.href}
-                  className="text-xs text-gray-600 bg-gray-50 border border-gray-200 hover:border-cyan-300 hover:text-cyan-700 px-3 py-1.5 rounded-full transition-colors">
+                  className="text-xs text-gray-200 px-3 py-1.5 rounded-full transition-colors hover:text-white"
+                  style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}>
                   {c.label}
                 </Link>
               ))}
@@ -218,49 +227,42 @@ export default function HomePage() {
 
             {/* Inline stats */}
             <div className="hero-anim flex flex-wrap gap-5 text-sm">
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <Zap size={14} className="text-cyan-500" />
-                <span className="font-bold">3,200+</span> <span className="text-gray-400">จุดชาร์จ</span>
+              <div className="flex items-center gap-1.5 text-gray-200">
+                <Zap size={14} style={{ color: "#00C8FF" }} />
+                <span className="font-bold text-white">3,200+</span> <span className="text-gray-400">จุดชาร์จ</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <BarChart2 size={14} className="text-cyan-500" />
-                <span className="font-bold">15+</span> <span className="text-gray-400">เครือข่าย</span>
+              <div className="flex items-center gap-1.5 text-gray-200">
+                <BarChart2 size={14} style={{ color: "#00C8FF" }} />
+                <span className="font-bold text-white">15+</span> <span className="text-gray-400">เครือข่าย</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <MapPin size={14} className="text-cyan-500" />
-                <span className="font-bold">77</span> <span className="text-gray-400">จังหวัด</span>
+              <div className="flex items-center gap-1.5 text-gray-200">
+                <MapPin size={14} style={{ color: "#00C8FF" }} />
+                <span className="font-bold text-white">77</span> <span className="text-gray-400">จังหวัด</span>
               </div>
-              <div className="flex items-center gap-1.5 text-gray-700">
-                <CheckCircle size={14} className="text-cyan-500" />
-                <span className="font-bold text-cyan-600">ข้อมูล Real-time</span>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle size={14} style={{ color: "#00C8FF" }} />
+                <span className="font-bold" style={{ color: "#00C8FF" }}>ข้อมูล Real-time</span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Right — hero image */}
-          <div className="hidden lg:block relative overflow-hidden">
-            <NextImage src="/hero.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="50vw" priority />
-            {/* Left fade overlay */}
-            <div className="absolute inset-y-0 left-0 w-24 pointer-events-none z-10"
-              style={{ background: "linear-gradient(90deg, white, transparent)" }} />
-            {/* Network stats card */}
-            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur rounded-xl shadow-lg p-3 z-10 min-w-[190px]">
-              <p className="font-bold text-gray-800 mb-2 text-xs">เครือข่ายผู้ให้บริการ</p>
-              {NETWORKS.map((n) => (
-                <div key={n.name} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.color }} />
-                    <span className="text-[11px] text-gray-600">{n.name}</span>
-                  </div>
-                  <span className="text-[11px] font-semibold text-gray-800">{n.count.toLocaleString()}</span>
-                </div>
-              ))}
-              <div className="mt-2 pt-1.5 border-t border-gray-100">
-                <Link href="/chargers" className="text-cyan-600 font-semibold text-[10px] hover:underline">
-                  ดูทั้งหมด 15 เครือข่าย →
-                </Link>
+        {/* Network stats card — bottom right */}
+        <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur rounded-xl shadow-xl p-3 z-10 min-w-[190px] hidden lg:block">
+          <p className="font-bold text-gray-800 mb-2 text-xs">เครือข่ายผู้ให้บริการ</p>
+          {NETWORKS.map((n) => (
+            <div key={n.name} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.color }} />
+                <span className="text-[11px] text-gray-600">{n.name}</span>
               </div>
+              <span className="text-[11px] font-semibold text-gray-800">{n.count.toLocaleString()}</span>
             </div>
+          ))}
+          <div className="mt-2 pt-1.5 border-t border-gray-100">
+            <Link href="/chargers" className="text-cyan-600 font-semibold text-[10px] hover:underline">
+              ดูทั้งหมด 15 เครือข่าย →
+            </Link>
           </div>
         </div>
       </section>
