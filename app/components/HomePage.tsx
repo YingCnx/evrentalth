@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { EV_CARS } from "../lib/cars";
 import { PROVINCE_COORDS } from "../lib/provinces";
+import FloatingLine from "./FloatingLine";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -106,7 +107,7 @@ const FAQS = [
   },
 ];
 
-const PARTNERS = ["PTT EV Station", "EA ANYWHERE", "EV STATION PLUZ", "PEA VOLTA", "EleXA", "SHARGE", "GWM", "BYD"];
+const DATA_SOURCES = ["PTT EV Station", "EA ANYWHERE", "EV STATION PLUZ", "PEA VOLTA", "EleXA", "SHARGE", "GWM", "BYD"];
 
 function formatPrice(n: number) {
   return n.toLocaleString("th-TH");
@@ -571,12 +572,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Partner Logos */}
+      {/* Data Sources */}
       <section className="border-y border-gray-100 py-10">
         <div className="max-w-7xl mx-auto px-5">
-          <p className="text-center text-xs text-gray-400 font-medium mb-6">ข้อมูลจากเครือข่ายชั้นนำ</p>
+          <p className="text-center text-xs text-gray-400 font-medium mb-6">รวบรวมข้อมูลจาก OpenStreetMap และเครือข่ายชาร์จในไทย</p>
           <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6">
-            {PARTNERS.map((p) => (
+            {DATA_SOURCES.map((p) => (
               <div key={p} className="bg-gray-50 border border-gray-200 text-gray-600 text-xs font-bold px-4 py-2.5 rounded-xl hover:border-cyan-300 hover:text-cyan-700 transition-colors cursor-default">
                 {p}
               </div>
@@ -604,6 +605,8 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      <FloatingLine />
 
       {/* Footer */}
       <footer className="text-gray-400 py-12" style={{ background: "#080C14" }}>

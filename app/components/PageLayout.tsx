@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Zap, MapPin, Car, Navigation, Calculator, BookOpen, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import FloatingLine from "./FloatingLine";
 
 const LABELS: Record<string, string> = {
   map: "แผนที่ชาร์จ", cars: "เปรียบเทียบรถ EV", routes: "เส้นทาง EV",
@@ -100,6 +101,7 @@ export default function PageLayout({ children }: { children: React.ReactNode }) 
       </nav>
 
       <main className="flex-1">{children}</main>
+      <FloatingLine />
 
       <footer className="text-gray-400 py-10 mt-auto" style={{ background: "#0A0F1A" }}>
         <div className="max-w-6xl mx-auto px-5">
