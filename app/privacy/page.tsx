@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import PageLayout from "../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "นโยบายความเป็นส่วนตัว | EV Charge Map Thailand",
+  title: "นโยบายความเป็นส่วนตัว",
 };
 
 export default function PrivacyPage() {

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Zap, MapPin, Clock, Battery, Navigation, CheckCircle, Lightbulb, Check } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "เชียงใหม่-กรุงเทพด้วยรถ EV ต้องแวะชาร์จที่ไหนบ้าง? | EV Charge Map",
+  title: "เชียงใหม่–กรุงเทพด้วย EV – จุดชาร์จ 696 กม.",
   description:
     "คู่มือขับรถ EV จากเชียงใหม่ถึงกรุงเทพ 696 กม. บอกจุดชาร์จทุกจุด EA Anywhere, PTT EV ใช้เวลาเพิ่มจากรถน้ำมันแค่ 40 นาที",
   keywords: ["เชียงใหม่กรุงเทพ EV", "ขับ EV ทางไกล", "จุดชาร์จทางหลวง", "เส้นทาง EV ไทย"],

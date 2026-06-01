@@ -4,7 +4,7 @@ import { Navigation, MapPin, Zap, Clock, Lightbulb, Fuel } from "lucide-react";
 import ArticleLayout from "../../components/ArticleLayout";
 
 export const metadata: Metadata = {
-  title: "กรุงเทพ → ภูเก็ต 862 กม. ด้วย EV ทำได้จริงไหม? | EV Charge Map",
+  title: "กรุงเทพ–ภูเก็ต 862 กม. ด้วย EV – ทดสอบจริง",
   description: "ทดสอบจริงกับ Tesla Model Y ขับกรุงเทพ-ภูเก็ต 862 กม. แวะชาร์จ 3 จุด ใช้เวลาเพิ่ม 1 ชั่วโมง ค่าใช้จ่ายรวม 650 บาท",
 };
 

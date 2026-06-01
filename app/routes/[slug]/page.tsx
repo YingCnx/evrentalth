@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const r = getRoute(slug);
   if (!r) return {};
   return {
-    title: `${r.from}-${r.to} ด้วยรถ EV ${r.distKm} กม. แวะชาร์จที่ไหน? | EV Charge Map`,
+    title: `เส้นทาง ${r.from}–${r.to} ${r.distKm} กม. – จุดชาร์จ EV`,
     description: r.description,
     keywords: [`${r.from} ${r.to} EV`, `เส้นทาง EV ${r.to}`, `จุดชาร์จ ${r.from} ${r.to}`],
   };

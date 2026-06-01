@@ -4,7 +4,7 @@ import { Zap, Battery, Home, Moon } from "lucide-react";
 import ArticleLayout from "../../components/ArticleLayout";
 
 export const metadata: Metadata = {
-  title: "ค่าชาร์จ EV ที่บ้าน vs สถานีสาธารณะ ต่างกันแค่ไหน? | EV Charge Map",
+  title: "ค่าชาร์จบ้าน vs สาธารณะ – เปรียบเทียบราคาจริง",
   description: "เปรียบเทียบค่าไฟบ้าน TOU 4.5 ฿/kWh กับ EA Anywhere 6.5 ฿/kWh ชาร์จที่ไหนถูกกว่า คุ้มค่ากว่า",
 };
 

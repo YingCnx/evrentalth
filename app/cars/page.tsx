@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import CarsPage from "../components/CarsPage";
 
 export const metadata: Metadata = {
-  title: "เปรียบเทียบรถ EV ทุกรุ่นในไทย 2024-2025 | EV Charge Map",
+  title: "เปรียบเทียบรถ EV ทุกรุ่น – สเปค ราคา 2025",
   description:
     "เปรียบเทียบสเปครถยนต์ไฟฟ้าทุกรุ่นที่ขายในไทย BYD, MG, Neta, Tesla, GWM, Volvo, BMW ดูราคา ระยะทาง เวลาชาร์จ ครบในที่เดียว",
   keywords: ["เปรียบเทียบรถ EV", "รถไฟฟ้าราคา", "BYD ราคา", "MG EV สเปค", "รถยนต์ไฟฟ้าไทย 2024"],

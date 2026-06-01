@@ -4,7 +4,7 @@ import { BookOpen, ChevronRight, Clock } from "lucide-react";
 import PageLayout from "../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "บทความ EV ไทย — คู่มือ รีวิว เส้นทาง | EV Charge Map",
+  title: "บทความ EV ไทย – คู่มือ รีวิว เส้นทาง",
   description: "รวมบทความรถยนต์ไฟฟ้า คู่มือชาร์จ รีวิวเส้นทาง EV ทั่วไทย อัปเดตทุกสัปดาห์โดยทีมผู้เชี่ยวชาญ",
 };
 

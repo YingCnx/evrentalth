@@ -4,7 +4,7 @@ import { ChevronRight, Car, Zap, Check } from "lucide-react";
 import ArticleLayout from "../../components/ArticleLayout";
 
 export const metadata: Metadata = {
-  title: "BYD Dolphin vs MG4 Electric ราคาใกล้กัน คุ้มกว่ากัน? | EV Charge Map",
+  title: "BYD Dolphin vs MG4 Electric – เปรียบเทียบ EV ราคาใกล้กัน",
   description: "เปรียบเทียบ BYD Dolphin กับ MG4 Electric สเปค ระยะทาง ความเร็วชาร์จ ค่าซ่อม ใครขับ Grab ควรเลือกอะไร",
 };
 

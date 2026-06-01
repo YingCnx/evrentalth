@@ -4,7 +4,7 @@ import { Zap, Users, Target, Heart, Code2, Database, Palette, FlaskConical, Sear
 import PageLayout from "../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "เกี่ยวกับ EV Charge Map Thailand | ทีมงานและพันธกิจ",
+  title: "เกี่ยวกับเรา – ทีมงานและพันธกิจ",
   description: "EV Charge Map Thailand แพลตฟอร์ม EV ครบวงจรสำหรับคนไทย พันธกิจ ทีมงาน และวิสัยทัศน์ของเรา",
 };
 

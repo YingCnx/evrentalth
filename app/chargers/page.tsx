@@ -5,7 +5,7 @@ import { CHARGER_NETWORKS } from "../lib/chargers";
 import PageLayout from "../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "เครือข่ายชาร์จ EV ทั้งหมดในไทย | EV Charge Map",
+  title: "เครือข่ายสถานีชาร์จ EV – EA PTT Sharge ทั่วไทย",
   description: "รวมเครือข่ายสถานีชาร์จรถไฟฟ้าทั้งหมดในไทย EA Anywhere, PTT EV, Sharge, Plugify เปรียบเทียบค่าบริการ จำนวนสถานี และความครอบคลุม",
 };
 

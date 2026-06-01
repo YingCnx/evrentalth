@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const car = EV_CARS.find(c => c.id === id);
   if (!car) return {};
   return {
-    title: `${car.brand} ${car.model} สเปค ราคา รีวิว | EV Charge Map`,
+    title: `${car.brand} ${car.model} – สเปค ราคา รีวิว`,
     description: `${car.brand} ${car.model} ราคา ${formatPrice(car.priceMin)} ระยะทาง ${car.rangeKm} กม. ชาร์จ DC ${car.chargeDcKw}kW ครบทุกสเปคที่ต้องรู้ก่อนซื้อ`,
   };
 }

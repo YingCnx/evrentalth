@@ -4,7 +4,7 @@ import { Zap, CheckCircle, AlertTriangle } from "lucide-react";
 import ArticleLayout from "../../components/ArticleLayout";
 
 export const metadata: Metadata = {
-  title: "ชาร์จ EV ที่บ้านต้องเตรียมอะไรบ้าง? ค่าใช้จ่ายเท่าไร? | EV Charge Map",
+  title: "ชาร์จ EV ที่บ้าน – ค่าติดตั้ง ขั้นตอน คู่มือ",
   description: "คู่มือติดตั้งชาร์จเจอร์รถ EV ที่บ้านตั้งแต่ต้น ตรวจสอบตู้ไฟ ค่าติดตั้ง Wallbox ใช้เวลากี่ชั่วโมง",
 };
 

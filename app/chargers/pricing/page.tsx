@@ -5,7 +5,7 @@ import { CHARGER_NETWORKS } from "../../lib/chargers";
 import PageLayout from "../../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "เปรียบเทียบค่าชาร์จ EV ทุกเครือข่ายในไทย 2026 | EV Charge Map",
+  title: "ค่าชาร์จ EV ทุกเครือข่าย – ตารางราคา 2026",
   description: "ตารางค่าบริการชาร์จรถ EV ทุกเครือข่าย EA Anywhere, PTT EV, Sharge, Plugify อัปเดต 2026 คำนวณค่าใช้จ่ายต่อการชาร์จ 1 ครั้ง",
 };
 

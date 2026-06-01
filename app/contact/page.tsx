@@ -3,7 +3,7 @@ import { Mail, MessageCircle, MapPin } from "lucide-react";
 import PageLayout from "../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "ติดต่อเรา | EV Charge Map Thailand",
+  title: "ติดต่อเรา – รายงานข้อมูลและความร่วมมือ",
   description: "ติดต่อทีมงาน EV Charge Map Thailand สำหรับความร่วมมือ รายงานข้อมูลผิดพลาด หรือข้อเสนอแนะ",
 };
 

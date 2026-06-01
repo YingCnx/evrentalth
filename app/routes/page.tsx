@@ -5,7 +5,7 @@ import { EV_ROUTES } from "../lib/routes";
 import PageLayout from "../components/PageLayout";
 
 export const metadata: Metadata = {
-  title: "เส้นทางท่องเที่ยว EV ยอดนิยมในไทย | EV Charge Map",
+  title: "เส้นทาง EV ยอดนิยม – วางแผนทริปทั่วไทย",
   description: "คู่มือเส้นทางขับรถ EV ทั่วไทย กรุงเทพ-เชียงใหม่ กรุงเทพ-ภูเก็ต กรุงเทพ-หัวหิน พร้อมจุดชาร์จทุกจุด",
 };
 

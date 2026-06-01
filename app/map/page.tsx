@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import EVChargeApp from "../components/EVChargeApp";
 
 export const metadata: Metadata = {
-  title: "แผนที่จุดชาร์จ EV ทั่วไทย | EV Charge Map Thailand",
+  title: "แผนที่จุดชาร์จ EV – ค้นหาสถานีชาร์จทั่วไทย",
   description:
     "แผนที่จุดชาร์จรถไฟฟ้าทั่วประเทศไทย ค้นหาตามจังหวัด กรองตามประเภทหัวชาร์จ AC DC Fast Charge วางแผนเส้นทาง EV ได้ทันที",
 };

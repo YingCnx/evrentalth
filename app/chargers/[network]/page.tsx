@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ network: 
   const n = CHARGER_NETWORKS.find(n => n.id === network);
   if (!n) return {};
   return {
-    title: `${n.name} — สถานีชาร์จ ${n.stations} แห่ง ${n.provinces} จังหวัด | EV Charge Map`,
+    title: `${n.name} – สถานีชาร์จ ${n.stations} แห่ง ${n.provinces} จังหวัด`,
     description: `${n.name} เครือข่ายชาร์จ EV ค่าบริการ ${n.priceNote} หัวชาร์จ ${n.connectors.join(", ")} ครอบคลุม ${n.provinces} จังหวัดทั่วไทย`,
   };
 }

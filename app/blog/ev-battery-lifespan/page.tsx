@@ -4,7 +4,7 @@ import { Battery, CheckCircle } from "lucide-react";
 import ArticleLayout from "../../components/ArticleLayout";
 
 export const metadata: Metadata = {
-  title: "แบตเตอรี่ EV เสื่อมไวไหม? ต้องเปลี่ยนกี่ปี? | EV Charge Map",
+  title: "แบตเตอรี่ EV เสื่อมกี่ปี – ข้อเท็จจริงและค่าเปลี่ยน",
   description: "ตอบทุกข้อสงสัยเรื่องแบตรถ EV เสื่อมกี่เปอร์เซ็นต่อปี รับประกันกี่ปี ค่าเปลี่ยนเท่าไร ควรกลัวไหม",
 };
 
