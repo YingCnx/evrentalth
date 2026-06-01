@@ -169,7 +169,7 @@ export default function HomePage() {
       {/* Hero — full bleed */}
       <section className="relative overflow-hidden" style={{ minHeight: 560 }}>
         {/* Background image — full width */}
-        <NextImage src="/hero.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="100vw" priority />
+        <NextImage src="/hero-new.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="100vw" priority />
         {/* Overlay — ซ้าย solid 100% ค่อย fade ไปขวา */}
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: "linear-gradient(90deg, #050a16 0%, #050a16 42%, rgba(5,10,22,0.80) 62%, rgba(5,10,22,0.15) 82%, transparent 100%)" }} />
@@ -300,7 +300,7 @@ export default function HomePage() {
               className="feature-card group rounded-2xl overflow-hidden border border-gray-100 hover:border-cyan-200 hover:shadow-lg transition-all duration-200">
               {/* Card image — hero.jpg + tinted overlay */}
               <div className="relative h-36 overflow-hidden">
-                <NextImage src="/hero.jpg" alt={f.title} fill className="object-cover object-center scale-110 group-hover:scale-100 transition-transform duration-500" sizes="400px" />
+                <NextImage src="/hero-new.jpg" alt={f.title} fill className="object-cover object-center scale-110 group-hover:scale-100 transition-transform duration-500" sizes="400px" />
                 <div className={`absolute inset-0 bg-gradient-to-br ${f.bg} opacity-75`} />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <f.icon size={44} className="text-white drop-shadow-lg" strokeWidth={1.5} />
@@ -403,7 +403,7 @@ export default function HomePage() {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="relative w-16 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                        <NextImage src="/hero.jpg" alt={`${c.brand} ${c.model}`} fill className="object-cover object-right" sizes="64px" />
+                        <NextImage src="/hero-new.jpg" alt={`${c.brand} ${c.model}`} fill className="object-cover object-right" sizes="64px" />
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-navy/30" />
                       </div>
                       <div>
