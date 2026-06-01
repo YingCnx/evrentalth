@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NextImage from "next/image";
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useGSAP } from "@gsap/react";
@@ -117,10 +118,13 @@ export default function HomePage() {
       y: 20, opacity: 0, duration: 0.5, stagger: 0.07, ease: "power2.out",
       scrollTrigger: { trigger: statsRef.current, start: "top 85%" },
     });
-    gsap.from(".feature-anim", {
-      y: 40, opacity: 0, duration: 0.6, stagger: 0.08, ease: "power2.out",
-      scrollTrigger: { trigger: featuresRef.current, start: "top 90%", once: true },
-    });
+    gsap.fromTo(".feature-card",
+      { y: 30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.55, stagger: 0.1, ease: "power2.out",
+        immediateRender: false,
+        scrollTrigger: { trigger: featuresRef.current, start: "top 85%", once: true },
+      }
+    );
   }, { scope: heroRef });
 
   return (
@@ -259,7 +263,7 @@ export default function HomePage() {
 
       {/* Features */}
       <section className="max-w-7xl mx-auto px-5 py-16" ref={featuresRef}>
-        <div className="feature-anim flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">เครื่องมือสำหรับชาว EV</h2>
             <p className="text-gray-400 text-sm mt-1">ครบทุกอย่างที่ต้องการในที่เดียว</p>
@@ -268,9 +272,14 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
           {FEATURES.map((f) => (
             <Link key={f.title} href={f.href}
-              className="feature-anim group rounded-2xl overflow-hidden border border-gray-100 hover:border-cyan-200 hover:shadow-lg transition-all duration-200">
-              <div className={`h-36 bg-gradient-to-br ${f.bg} flex items-center justify-center`}>
-                <f.icon size={48} className="text-white/90" strokeWidth={1.5} />
+              className="feature-card group rounded-2xl overflow-hidden border border-gray-100 hover:border-cyan-200 hover:shadow-lg transition-all duration-200">
+              {/* Card image — hero.jpg + tinted overlay */}
+              <div className="relative h-36 overflow-hidden">
+                <NextImage src="/hero.jpg" alt={f.title} fill className="object-cover object-center scale-110 group-hover:scale-100 transition-transform duration-500" sizes="400px" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${f.bg} opacity-75`} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <f.icon size={44} className="text-white drop-shadow-lg" strokeWidth={1.5} />
+                </div>
               </div>
               <div className="p-5">
                 <h3 className="font-bold text-gray-900 mb-1">{f.title}</h3>
@@ -368,8 +377,9 @@ export default function HomePage() {
                 <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Car size={16} className="text-gray-400" />
+                      <div className="relative w-16 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                        <NextImage src="/hero.jpg" alt={`${c.brand} ${c.model}`} fill className="object-cover object-right" sizes="64px" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-navy/30" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">{c.brand} {c.model}</p>
