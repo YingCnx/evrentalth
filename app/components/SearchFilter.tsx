@@ -6,6 +6,7 @@ import { Search, X } from "lucide-react";
 export type FilterState = {
   province: string;
   chargerType: string;
+  operator: string;
 };
 
 const PROVINCES = [
@@ -38,41 +39,68 @@ const CHARGER_TYPES = [
   { value: "fast", label: "Fast 50kW+" },
 ];
 
+const OPERATORS = [
+  { value: "", label: "ทุกเครือข่าย" },
+  { value: "ea-anywhere", label: "EA Anywhere" },
+  { value: "ptt-ev", label: "PTT EV" },
+  { value: "sharge", label: "Sharge" },
+  { value: "mg-charging", label: "MG" },
+  { value: "byd-charging", label: "BYD" },
+];
+
 type Props = {
   onFilter: (f: FilterState) => void;
   stationCount: number;
+  initialOperator?: string;
 };
 
-export default function SearchFilter({ onFilter, stationCount }: Props) {
+export default function SearchFilter({ onFilter, stationCount, initialOperator = "" }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [chargerType, setChargerType] = useState("");
+  const [operator, setOperator] = useState(initialOperator);
+
+  const current = (): FilterState => ({
+    province: PROVINCES.includes(inputValue) ? inputValue : "",
+    chargerType,
+    operator,
+  });
 
   const applyProvince = (val: string) => {
-    // Only trigger search when value exactly matches a province or is empty
     const matched = PROVINCES.includes(val) ? val : "";
-    onFilter({ province: matched, chargerType });
+    onFilter({ province: matched, chargerType, operator });
   };
 
-  const apply = (p: string, c: string) => onFilter({ province: p, chargerType: c });
+  const applyChargerType = (c: string) => {
+    setChargerType(c);
+    const matched = PROVINCES.includes(inputValue) ? inputValue : "";
+    onFilter({ province: matched, chargerType: c, operator });
+  };
+
+  const applyOperator = (op: string) => {
+    setOperator(op);
+    const matched = PROVINCES.includes(inputValue) ? inputValue : "";
+    onFilter({ province: matched, chargerType, operator: op });
+  };
 
   const reset = () => {
     setInputValue("");
     setChargerType("");
-    onFilter({ province: "", chargerType: "" });
+    setOperator("");
+    onFilter({ province: "", chargerType: "", operator: "" });
   };
 
-  const hasFilter = inputValue || chargerType;
+  const hasFilter = inputValue || chargerType || operator;
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Province — native datalist สำหรับ Thai IME support */}
-      <div className="relative flex-1 max-w-xs">
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Province */}
+      <div className="relative flex-1 max-w-[160px]">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
         <input
           list="province-list"
           type="search"
           value={inputValue}
-          placeholder="ค้นหาจังหวัด..."
+          placeholder="จังหวัด..."
           onChange={(e) => {
             const val = e.target.value;
             setInputValue(val);
@@ -83,22 +111,29 @@ export default function SearchFilter({ onFilter, stationCount }: Props) {
           autoComplete="off"
         />
         <datalist id="province-list">
-          {PROVINCES.map((p) => (
-            <option key={p} value={p} />
-          ))}
+          {PROVINCES.map((p) => <option key={p} value={p} />)}
         </datalist>
       </div>
+
+      {/* Operator dropdown */}
+      <select
+        value={operator}
+        onChange={(e) => applyOperator(e.target.value)}
+        className={`py-2 pl-2.5 pr-7 text-xs border rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-green-500 transition-colors ${
+          operator ? "border-green-400 text-green-700 font-semibold" : "border-gray-200 text-gray-500"
+        }`}
+      >
+        {OPERATORS.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
 
       {/* Charger type pills */}
       <div className="flex items-center gap-1">
         {CHARGER_TYPES.map((t) => (
           <button
             key={t.value}
-            onClick={() => {
-              setChargerType(t.value);
-              const matched = PROVINCES.includes(inputValue) ? inputValue : "";
-              apply(matched, t.value);
-            }}
+            onClick={() => applyChargerType(t.value)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               chargerType === t.value
                 ? "bg-green-500 text-white shadow-sm"

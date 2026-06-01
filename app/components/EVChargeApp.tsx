@@ -2,13 +2,17 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
-import { Zap, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Zap, Loader2, AlertCircle, ChevronDown, Navigation, List } from "lucide-react";
 import SearchFilter, { type FilterState } from "./SearchFilter";
 import type { Station } from "./StationCard";
 import StationCard from "./StationCard";
 import StationList from "./StationList";
+import type { RouteResult, RouteStation } from "./RoutePlanner";
 
 const Map = dynamic(() => import("./Map"), { ssr: false, loading: () => <MapSkeleton /> });
+const RoutePlanner = dynamic(() => import("./RoutePlanner"), { ssr: false });
 
 function MapSkeleton() {
   return (
@@ -49,6 +53,7 @@ const PROVINCE_COORDS: Record<string, [number, number]> = {
 };
 
 export default function EVChargeApp() {
+  const searchParams = useSearchParams();
   const [stations, setStations] = useState<Station[]>([]);
   const [selected, setSelected] = useState<Station | null>(null);
   const [focusCoords, setFocusCoords] = useState<[number, number] | undefined>(undefined);
@@ -57,6 +62,11 @@ export default function EVChargeApp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [mode, setMode] = useState<"browse" | "route">(searchParams.get("tab") === "route" ? "route" : "browse");
+  const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
+  const [routeOrigin, setRouteOrigin] = useState<[number, number] | null>(null);
+  const [routeDest, setRouteDest] = useState<[number, number] | null>(null);
+  const [selectedRouteStation, setSelectedRouteStation] = useState<RouteStation | null>(null);
   const lastFilter = useRef<FilterState>({ province: "", chargerType: "" });
 
   useEffect(() => {
@@ -75,6 +85,7 @@ export default function EVChargeApp() {
     const params = new URLSearchParams();
     if (filter.province) params.set("province", filter.province);
     if (filter.chargerType) params.set("chargerType", filter.chargerType);
+    if (filter.operator) params.set("operator", filter.operator);
 
     try {
       const res = await fetch(`/api/stations?${params}`);
@@ -90,7 +101,7 @@ export default function EVChargeApp() {
 
   const handleFilter = useCallback((f: FilterState) => {
     lastFilter.current = f;
-    const isReset = !f.province && !f.chargerType;
+    const isReset = !f.province && !f.chargerType && !f.operator;
     if (isReset) {
       // Clear filter → reset map to fit all Thailand
       setFocusCoords(undefined);
@@ -103,7 +114,8 @@ export default function EVChargeApp() {
   }, [fetchStations]);
 
   useEffect(() => {
-    fetchStations({ province: "", chargerType: "" });
+    const initOperator = searchParams.get("operator") ?? "";
+    fetchStations({ province: "", chargerType: "", operator: initOperator });
   }, [fetchStations]);
 
   const handleSelect = (s: Station) => {
@@ -124,7 +136,7 @@ export default function EVChargeApp() {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 z-20 px-5 py-3 flex items-center gap-4">
-        <div className="flex items-center gap-2.5 flex-shrink-0">
+        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity">
           <div className="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center">
             <Zap size={15} className="text-white" fill="white" />
           </div>
@@ -132,10 +144,25 @@ export default function EVChargeApp() {
             <p className="font-bold text-sm text-gray-900 tracking-tight">EV Charge Map</p>
             <p className="text-[10px] text-gray-400 mt-0.5">Thailand</p>
           </div>
-        </div>
+        </Link>
         <div className="w-px h-6 bg-gray-200 flex-shrink-0" />
+        {/* Mode toggle */}
+        <div className="hidden md:flex items-center gap-1 p-1 bg-gray-100 rounded-xl flex-shrink-0">
+          <button
+            onClick={() => { setMode("browse"); setRouteResult(null); setRouteOrigin(null); setRouteDest(null); setSelectedRouteStation(null); }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === "browse" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            <List size={12} />สถานี
+          </button>
+          <button
+            onClick={() => setMode("route")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${mode === "route" ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            <Navigation size={12} />เส้นทาง
+          </button>
+        </div>
         <div className="flex-1 min-w-0">
-          <SearchFilter onFilter={handleFilter} stationCount={stations.length} />
+          {mode === "browse" && <SearchFilter onFilter={handleFilter} stationCount={stations.length} initialOperator={searchParams.get("operator") ?? ""} />}
         </div>
       </header>
 
@@ -145,11 +172,15 @@ export default function EVChargeApp() {
         <main className="flex-1 relative overflow-hidden">
           <div className="absolute inset-0">
             <Map
-              stations={stations}
+              stations={mode === "browse" ? stations : []}
               onSelect={handleSelect}
               selected={selected}
               focusCoords={focusCoords}
               resetView={resetView}
+              routeResult={routeResult}
+              routeOrigin={routeOrigin}
+              routeDest={routeDest}
+              selectedRouteStation={selectedRouteStation}
             />
           </div>
 
@@ -206,14 +237,28 @@ export default function EVChargeApp() {
           </div>
         </main>
 
-        {/* Sidebar — shows list or station detail */}
-        <StationList
-          stations={stations}
-          userCoords={listOrigin}
-          selected={selected}
-          onSelect={handleSelect}
-          onClose={handleClose}
-        />
+        {/* Sidebar — browse or route planner */}
+        {mode === "browse" ? (
+          <StationList
+            stations={stations}
+            userCoords={listOrigin}
+            selected={selected}
+            onSelect={handleSelect}
+            onClose={handleClose}
+          />
+        ) : (
+          <RoutePlanner
+            onResult={(result, origin, dest) => {
+              setRouteResult(result);
+              setRouteOrigin(origin);
+              setRouteDest(dest);
+              setSelectedRouteStation(null);
+            }}
+            onStationSelect={setSelectedRouteStation}
+            initialOrigin={searchParams.get("from") ?? ""}
+            initialDest={searchParams.get("to") ?? ""}
+          />
+        )}
       </div>
 
       {/* Footer */}

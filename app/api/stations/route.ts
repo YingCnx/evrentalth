@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CHARGER_NETWORKS } from "../../lib/chargers";
 
 const OVERPASS = "https://overpass-api.de/api/interpreter";
 
@@ -185,6 +186,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const province = searchParams.get("province") ?? "";
   const chargerType = searchParams.get("chargerType") ?? "";
+  const operatorId = searchParams.get("operator") ?? "";
 
   // Build bbox or around query
   let areaQuery: string;
@@ -248,6 +250,19 @@ out center body;
           return v >= 50;
         });
       });
+    }
+
+    // Operator filter — match against OSM operator/brand/name tags
+    if (operatorId) {
+      const network = CHARGER_NETWORKS.find(n => n.id === operatorId);
+      if (network) {
+        const keywords = network.osmKeywords.map(k => k.toLowerCase());
+        elements = elements.filter((el) => {
+          const tags = el.tags ?? {};
+          const fields = [tags.operator, tags.brand, tags.network, tags.name].filter(Boolean);
+          return fields.some(f => keywords.some(kw => f!.toLowerCase().includes(kw)));
+        });
+      }
     }
 
     const stations = elements
