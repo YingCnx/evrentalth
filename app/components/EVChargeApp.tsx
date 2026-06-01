@@ -16,9 +16,28 @@ function MapSkeleton() {
   );
 }
 
+const PROVINCE_COORDS: Record<string, [number, number]> = {
+  "กรุงเทพมหานคร": [13.7563, 100.5018],
+  "เชียงใหม่": [18.7883, 98.9853],
+  "ภูเก็ต": [7.8804, 98.3923],
+  "ชลบุรี": [13.3611, 100.9847],
+  "ขอนแก่น": [16.4322, 102.8236],
+  "นครราชสีมา": [14.9798, 102.0978],
+  "เชียงราย": [19.9105, 99.8406],
+  "อุดรธานี": [17.4138, 102.7872],
+  "สุราษฎร์ธานี": [9.1382, 99.3211],
+  "นครศรีธรรมราช": [8.4304, 99.9631],
+  "หาดใหญ่": [7.0062, 100.4747],
+  "ระยอง": [12.6814, 101.2816],
+  "นนทบุรี": [13.8622, 100.5134],
+  "ปทุมธานี": [14.0208, 100.5259],
+  "สมุทรปราการ": [13.5990, 100.5998],
+};
+
 export default function EVChargeApp() {
   const [stations, setStations] = useState<Station[]>([]);
   const [selected, setSelected] = useState<Station | null>(null);
+  const [focusCoords, setFocusCoords] = useState<[number, number] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [panelOpen, setPanelOpen] = useState(false);
@@ -47,6 +66,7 @@ export default function EVChargeApp() {
 
   const handleFilter = useCallback((f: FilterState) => {
     lastFilter.current = f;
+    setFocusCoords(f.province ? PROVINCE_COORDS[f.province] : undefined);
     fetchStations(f);
   }, [fetchStations]);
 
@@ -81,7 +101,7 @@ export default function EVChargeApp() {
       {/* Main */}
       <main className="flex-1 relative overflow-hidden">
         <div className="absolute inset-0">
-          <Map stations={stations} onSelect={handleSelect} selected={selected} />
+          <Map stations={stations} onSelect={handleSelect} selected={selected} focusCoords={focusCoords} />
         </div>
 
         {/* Loading overlay */}

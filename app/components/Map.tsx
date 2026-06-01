@@ -8,9 +8,10 @@ type Props = {
   stations: Station[];
   onSelect: (s: Station) => void;
   selected: Station | null;
+  focusCoords?: [number, number];
 };
 
-export default function Map({ stations, onSelect, selected }: Props) {
+export default function Map({ stations, onSelect, selected, focusCoords }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [map, setMap] = useState<any>(null);
@@ -91,6 +92,25 @@ export default function Map({ stations, onSelect, selected }: Props) {
     const { Latitude, Longitude } = selected.AddressInfo;
     map.panTo([Latitude, Longitude], { animate: true });
   }, [map, selected]);
+
+  // Fly to province focus or fit bounds of all stations
+  useEffect(() => {
+    if (!map) return;
+    if (focusCoords) {
+      map.flyTo(focusCoords, 11, { animate: true, duration: 1 });
+      return;
+    }
+    if (stations.length > 0) {
+      import("leaflet").then((L) => {
+        const coords = stations
+          .map((s) => [s.AddressInfo.Latitude, s.AddressInfo.Longitude] as [number, number])
+          .filter(([lat, lng]) => lat && lng);
+        if (coords.length === 0) return;
+        const bounds = L.latLngBounds(coords);
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12, animate: true });
+      });
+    }
+  }, [map, stations, focusCoords]);
 
   return (
     <div
