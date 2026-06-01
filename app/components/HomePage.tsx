@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -12,6 +13,7 @@ import {
   Users, BarChart2, Menu,
 } from "lucide-react";
 import { EV_CARS } from "../lib/cars";
+import { PROVINCE_COORDS } from "../lib/provinces";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -116,6 +118,22 @@ export default function HomePage() {
   const featuresRef = useRef<HTMLDivElement>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [searchVal, setSearchVal] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSearch = () => {
+    const val = searchVal.trim();
+    if (!val) { router.push("/map"); return; }
+    // หาจังหวัดที่ตรงกัน (partial match)
+    const matched = Object.keys(PROVINCE_COORDS).find(
+      (p) => p.includes(val) || val.includes(p.slice(0, 3))
+    );
+    if (matched) {
+      router.push(`/map?province=${encodeURIComponent(matched)}`);
+    } else {
+      router.push(`/map?province=${encodeURIComponent(val)}`);
+    }
+  };
 
   useGSAP(() => {
     gsap.from(".hero-anim", { y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out" });
@@ -159,23 +177,43 @@ export default function HomePage() {
               className="hidden sm:flex items-center gap-1.5 bg-cyan-400 hover:bg-cyan-300 text-gray-900 text-sm font-bold px-4 py-2 rounded-xl transition-colors">
               <MapPin size={14} />เปิดแผนที่
             </Link>
-            <button className="md:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors">
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors">
               <Menu size={18} className="text-gray-600" />
             </button>
           </div>
         </div>
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 bg-white px-5 py-3 grid grid-cols-2 gap-1">
+            {[
+              { href: "/map", label: "แผนที่จุดชาร์จ" },
+              { href: "/map", label: "วางแผนเส้นทาง" },
+              { href: "/cars", label: "เปรียบเทียบรถ EV" },
+              { href: "/calculator", label: "คำนวณคืนทุน" },
+              { href: "/blog", label: "บทความ EV" },
+              { href: "/chargers", label: "เครือข่ายชาร์จ" },
+            ].map((n) => (
+              <Link key={n.label} href={n.href} onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                {n.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* Hero — full bleed */}
       <section className="relative overflow-hidden" style={{ minHeight: 560 }}>
         {/* Background image — full width */}
         <NextImage src="/hero-new.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="100vw" priority />
-        {/* Overlay บาง ๆ เฉพาะซ้ายให้ text อ่านออก */}
-        <div className="absolute inset-0 pointer-events-none"
+        {/* Overlay — mobile: เข้มทั้งหน้า, desktop: fade ซ้ายขวา */}
+        <div className="absolute inset-0 pointer-events-none md:hidden" style={{ background: "rgba(5,10,22,0.70)" }} />
+        <div className="absolute inset-0 pointer-events-none hidden md:block"
           style={{ background: "linear-gradient(90deg, rgba(5,10,22,0.55) 0%, rgba(5,10,22,0.30) 45%, transparent 70%)" }} />
 
         {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-10 py-20 lg:py-28 flex flex-col justify-center" style={{ minHeight: 560 }}>
+        <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-10 py-14 md:py-20 lg:py-28 flex flex-col justify-center" style={{ minHeight: 560 }}>
           <div className="max-w-xl">
             <div className="hero-anim inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold mb-5 w-fit border"
               style={{ background: "rgba(0,200,255,0.15)", borderColor: "rgba(0,200,255,0.3)", color: "#00C8FF" }}>
@@ -199,19 +237,24 @@ export default function HomePage() {
                 <Search size={15} className="text-gray-300 flex-shrink-0" />
                 <input
                   type="text"
+                  list="province-list"
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
-                  placeholder="ค้นหาสถานีชาร์จ ใกล้ฉัน หรือ พิมพ์ชื่อสถานที่"
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="พิมพ์ชื่อจังหวัด เช่น เชียงใหม่ ภูเก็ต"
                   className="text-sm text-white placeholder-gray-400 bg-transparent outline-none w-full"
                 />
+                <datalist id="province-list">
+                  {Object.keys(PROVINCE_COORDS).map((p) => <option key={p} value={p} />)}
+                </datalist>
               </div>
-              <Link
-                href={`/map${searchVal ? `?q=${encodeURIComponent(searchVal)}` : ""}`}
+              <button
+                onClick={handleSearch}
                 className="font-bold text-sm px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
                 style={{ background: "#00C8FF", color: "#08101e" }}
               >
                 ค้นหา
-              </Link>
+              </button>
             </div>
 
             {/* Filter chips */}

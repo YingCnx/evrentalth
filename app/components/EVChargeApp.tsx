@@ -114,8 +114,12 @@ export default function EVChargeApp() {
   }, [fetchStations]);
 
   useEffect(() => {
+    const initProvince = searchParams.get("province") ?? "";
     const initOperator = searchParams.get("operator") ?? "";
-    fetchStations({ province: "", chargerType: "", operator: initOperator });
+    if (initProvince) {
+      setFocusCoords(PROVINCE_COORDS[initProvince]);
+    }
+    fetchStations({ province: initProvince, chargerType: "", operator: initOperator });
   }, [fetchStations]);
 
   const handleSelect = (s: Station) => {
