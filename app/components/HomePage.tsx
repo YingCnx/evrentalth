@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -135,59 +136,73 @@ export default function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden text-white" style={{ background: "linear-gradient(135deg, #0A0F1A 0%, #0D1830 50%, #091828 100%)" }}>
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "linear-gradient(rgba(0,200,255,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,255,.2) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
-        {/* Glow */}
-        <div className="absolute top-0 right-0 w-[600px] h-[400px] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" style={{ background: "rgba(0,200,255,0.12)" }} />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" style={{ background: "rgba(0,150,255,0.08)" }} />
+      <section className="relative overflow-hidden text-white" style={{ minHeight: "560px" }}>
+        {/* Background image */}
+        <Image
+          src="/hero.jpg"
+          alt="แผนที่จุดชาร์จ EV ทั่วประเทศไทย"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+        {/* Left gradient overlay — ให้ text อ่านง่าย */}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(8,12,26,0.82) 0%, rgba(8,12,26,0.55) 55%, rgba(8,12,26,0.05) 100%)" }} />
 
         <div className="relative max-w-6xl mx-auto px-5 py-24 md:py-32">
-          <div className="max-w-2xl">
+          <div className="max-w-xl">
             {/* Badge */}
             <div className="hero-anim inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-6 border"
-              style={{ background: "rgba(0,200,255,0.12)", borderColor: "rgba(0,200,255,0.25)", color: "#00C8FF" }}>
+              style={{ background: "rgba(0,200,255,0.15)", borderColor: "rgba(0,200,255,0.30)", color: "#00C8FF" }}>
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#00C8FF" }} />
               อัปเดตข้อมูลแบบ real-time
             </div>
 
-            <h1 className="hero-anim text-4xl md:text-6xl font-bold leading-tight mb-6">
-              วางแผนเดินทาง<br />
-              <span style={{ color: "#00C8FF" }}>ด้วยรถ EV</span><br />
-              ให้ง่ายขึ้น
+            <h1 className="hero-anim text-4xl md:text-5xl font-bold leading-tight mb-6 drop-shadow-lg">
+              ค้นหาสถานีชาร์จ EV<br />
+              <span style={{ color: "#00C8FF" }}>ทั่วประเทศไทย</span>
             </h1>
-            <p className="hero-anim text-lg text-gray-300 leading-relaxed mb-10 max-w-lg">
-              แผนที่จุดชาร์จ 3,200+ แห่งทั่วไทย วางแผนเส้นทาง รู้ว่าต้องแวะชาร์จกี่จุด เปรียบเทียบรถ และคำนวณความคุ้ม — ทุกอย่างในที่เดียว
+            <p className="hero-anim text-base text-gray-200 leading-relaxed mb-10 max-w-md drop-shadow">
+              วางแผนเส้นทางได้ง่าย ค้นหาจุดชาร์จแบบ real-time เปรียบเทียบรถ EV และคำนวณค่าใช้จ่ายก่อนเดินทาง
             </p>
             <div className="hero-anim flex flex-wrap gap-3">
               <Link
                 href="/map"
                 className="flex items-center gap-2 font-bold px-6 py-3.5 rounded-2xl transition-colors text-base shadow-lg"
-                style={{ background: "#00C8FF", color: "#0A0F1A", boxShadow: "0 8px 32px rgba(0,200,255,0.25)" }}
+                style={{ background: "#00C8FF", color: "#0A0F1A", boxShadow: "0 8px 32px rgba(0,200,255,0.30)" }}
               >
                 <MapPin size={18} />เปิดแผนที่จุดชาร์จ
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/map"
-                className="flex items-center gap-2 border text-white font-semibold px-6 py-3.5 rounded-2xl transition-colors text-base hover:bg-white/10"
-                style={{ background: "rgba(255,255,255,0.07)", borderColor: "rgba(255,255,255,0.15)" }}
+                className="flex items-center gap-2 border text-white font-semibold px-6 py-3.5 rounded-2xl transition-all text-base hover:bg-white/10"
+                style={{ background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.20)" }}
               >
                 <Navigation size={18} />วางแผนเส้นทาง
               </Link>
+            </div>
+
+            {/* Inline stats ใต้ปุ่ม */}
+            <div className="hero-anim flex flex-wrap gap-6 mt-10 text-sm text-gray-300">
+              {STATS.map((s) => (
+                <div key={s.label} className="flex items-center gap-1.5">
+                  <span className="font-bold text-white">{s.value}</span>
+                  <span className="text-gray-400">{s.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="border-b border-gray-100 bg-gray-50" ref={statsRef}>
-        <div className="max-w-6xl mx-auto px-5 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Stats bar */}
+      <section className="border-b border-gray-100" ref={statsRef}>
+        <div className="max-w-6xl mx-auto px-5 py-6 flex flex-wrap justify-center md:justify-between gap-6">
           {STATS.map((s) => (
-            <div key={s.label} className="stat-anim text-center">
-              <p className="text-3xl font-bold text-gray-900">{s.value}</p>
-              <p className="text-sm text-gray-500 mt-1">{s.label}</p>
+            <div key={s.label} className="stat-anim flex items-center gap-3">
+              <p className="text-2xl font-bold text-gray-900">{s.value}</p>
+              <p className="text-sm text-gray-400">{s.label}</p>
             </div>
           ))}
         </div>
