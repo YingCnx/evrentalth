@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Battery, Zap, Clock, Users, ChevronRight, Navigation, ArrowLeft, Car as CarIcon } from "lucide-react";
 import { EV_CARS, SEGMENTS, formatPrice } from "../../lib/cars";
 import PageLayout from "../../components/PageLayout";
@@ -35,11 +36,15 @@ export default async function CarDetailPage({ params }: { params: Promise<{ id: 
 
         <div className="grid md:grid-cols-2 gap-8 mb-10">
           {/* Image */}
-          <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-3xl flex items-center justify-center h-64 relative">
-            <div className="text-8xl font-black text-gray-200">{car.brand[0]}</div>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center h-64 relative overflow-hidden">
+            {car.imageUrl ? (
+              <Image src={car.imageUrl} alt={`${car.brand} ${car.model}`} fill className="object-contain p-6" sizes="(max-width:768px) 100vw, 50vw" />
+            ) : (
+              <div className="text-8xl font-black text-gray-200">{car.brand[0]}</div>
+            )}
             <div className="absolute top-4 left-4 flex gap-2">
-              <span className="text-xs font-bold bg-white px-2.5 py-1 rounded-lg text-gray-600">{SEGMENTS[car.segment]}</span>
-              {car.grabFriendly && <span className="text-xs font-bold bg-green-500 text-white px-2.5 py-1 rounded-lg flex items-center gap-1"><CarIcon size={11} /> Grab OK</span>}
+              <span className="text-xs font-bold bg-white px-2.5 py-1 rounded-lg text-gray-600 shadow-sm">{SEGMENTS[car.segment]}</span>
+              {car.grabFriendly && <span className="text-xs font-bold bg-green-500 text-white px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm"><CarIcon size={11} /> Grab OK</span>}
             </div>
           </div>
 

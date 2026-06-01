@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Zap, Battery, Clock, ChevronRight, Filter, ArrowUpDown, Car as CarIcon, Check } from "lucide-react";
 import { EV_CARS, BRANDS, SEGMENTS, formatPrice, type EVCar } from "../lib/cars";
 
@@ -150,9 +151,13 @@ export default function CarsPage() {
                 className={`bg-white rounded-2xl border-2 transition-all ${
                   isSelected ? "border-blue-400 shadow-blue-100 shadow-lg" : "border-gray-100 hover:border-green-200 hover:shadow-md"
                 }`}>
-                {/* Car image placeholder */}
+                {/* Car image */}
                 <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-50 rounded-t-2xl flex items-center justify-center relative overflow-hidden">
-                  <div className="text-5xl font-black text-gray-200">{car.brand[0]}</div>
+                  {car.imageUrl ? (
+                    <Image src={car.imageUrl} alt={`${car.brand} ${car.model}`} fill className="object-contain p-4" sizes="320px" />
+                  ) : (
+                    <div className="text-5xl font-black text-gray-200">{car.brand[0]}</div>
+                  )}
                   <div className="absolute top-3 left-3">
                     <span className="text-[10px] font-bold bg-white/90 text-gray-600 px-2 py-1 rounded-lg">
                       {SEGMENTS[car.segment]}

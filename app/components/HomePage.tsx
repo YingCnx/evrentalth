@@ -465,9 +465,12 @@ export default function HomePage() {
                 <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-16 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                        <NextImage src="/hero-new.jpg" alt={`${c.brand} ${c.model}`} fill className="object-cover object-right" sizes="64px" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-navy/30" />
+                      <div className="relative w-16 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gray-50">
+                        {c.imageUrl ? (
+                          <NextImage src={c.imageUrl} alt={`${c.brand} ${c.model}`} fill className="object-contain object-center p-0.5" sizes="64px" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-300 text-[9px] font-bold">{c.brand}</div>
+                        )}
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">{c.brand} {c.model}</p>
