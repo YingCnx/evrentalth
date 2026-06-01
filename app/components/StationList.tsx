@@ -54,7 +54,7 @@ type Props = {
 export default function StationList({ stations, userCoords, selected, onSelect, onClose }: Props) {
   const origin = userCoords ?? [13.7563, 100.5018];
 
-  const sorted = [...stations]
+  const sorted: { s: Station; km: number }[] = [...stations]
     .map((s) => ({
       s,
       km: haversineKm(origin[0], origin[1], s.AddressInfo.Latitude, s.AddressInfo.Longitude),
@@ -104,14 +104,17 @@ export default function StationList({ stations, userCoords, selected, onSelect, 
 
       {/* List */}
       <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
-        {sorted.length === 0 ? (
+        {sorted.length === 0 && (
           <div className="flex flex-col items-center justify-center h-40 gap-2 text-gray-400">
             <Zap size={20} strokeWidth={1.5} />
             <span className="text-sm">ไม่พบสถานี</span>
           </div>
-        ) : (
-          sorted.map(({ s, km }, i) => {
-            const isActive = selected?.ID === s.ID;
+        )}
+        {sorted.length > 0 && (sorted as Array<{ s: Station; km: number }>).map((item, i) => {
+            const s: Station = item.s;
+            const km: number = item.km;
+            const selectedId = (selected as Station | null)?.ID;
+            const isActive = selectedId !== undefined && selectedId === s.ID;
             const conn = s.Connections?.[0];
             const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.AddressInfo.Latitude},${s.AddressInfo.Longitude}`;
 
@@ -164,8 +167,7 @@ export default function StationList({ stations, userCoords, selected, onSelect, 
                 </div>
               </button>
             );
-          })
-        )}
+          })}
       </div>
     </aside>
   );

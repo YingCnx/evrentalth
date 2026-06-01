@@ -67,7 +67,7 @@ export default function EVChargeApp() {
   const [routeOrigin, setRouteOrigin] = useState<[number, number] | null>(null);
   const [routeDest, setRouteDest] = useState<[number, number] | null>(null);
   const [selectedRouteStation, setSelectedRouteStation] = useState<RouteStation | null>(null);
-  const lastFilter = useRef<FilterState>({ province: "", chargerType: "" });
+  const lastFilter = useRef<FilterState>({ province: "", chargerType: "", operator: "" });
 
   useEffect(() => {
     if (!navigator.geolocation) return;

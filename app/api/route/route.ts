@@ -121,8 +121,8 @@ export async function GET(req: NextRequest) {
         connectors: connectors.length > 0 ? connectors : undefined,
       };
     })
-    .filter(Boolean)
-    .sort((a, b) => a!.posAlong - b!.posAlong) as NonNullable<ReturnType<typeof elements[0]["tags"]> extends object ? { id: number; lat: number; lon: number; name: string; operator?: string; distToRoute: number; posAlong: number; openingHours?: string; fee?: string; connectors?: string[] } : never>[];
+    .filter((x): x is NonNullable<typeof x> => x !== null && x !== undefined)
+    .sort((a, b) => a.posAlong - b.posAlong);
 
   // 5. Add reachability: can reach from previous stop?
   let prevPos = 0;
