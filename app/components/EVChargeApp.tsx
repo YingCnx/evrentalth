@@ -178,8 +178,8 @@ export default function EVChargeApp() {
               </div>
             </div>
 
-            {/* Desktop: floating card */}
-            <div className="hidden md:block absolute top-4 right-4 z-30 w-80">
+            {/* Desktop: floating card — z-[1000] to sit above Leaflet's tile/marker panes */}
+            <div className="hidden md:block fixed top-20 right-4 z-[1000] w-80">
               <StationCard station={selected} onClose={() => setSelected(null)} />
             </div>
           </>
