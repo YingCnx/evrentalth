@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+
+const HeroMap = dynamic(() => import("./HeroMap"), { ssr: false, loading: () => <div className="w-full h-full bg-[#0A0F1A]" /> });
 import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -223,17 +226,19 @@ export default function HomePage() {
         )}
       </nav>
 
-      {/* Hero — full bleed */}
+      {/* Hero — full bleed live map */}
       <section className="relative overflow-hidden" style={{ minHeight: 560 }}>
-        {/* Background image — full width */}
-        <NextImage src="/hero-new.jpg" alt="แผนที่จุดชาร์จ EV ทั่วไทย" fill className="object-cover object-center" sizes="100vw" priority />
+        {/* Live map background */}
+        <div className="absolute inset-0 z-0">
+          <HeroMap />
+        </div>
         {/* Overlay — mobile: เข้มทั้งหน้า, desktop: fade ซ้ายขวา */}
-        <div className="absolute inset-0 pointer-events-none md:hidden" style={{ background: "rgba(5,10,22,0.70)" }} />
-        <div className="absolute inset-0 pointer-events-none hidden md:block"
-          style={{ background: "linear-gradient(90deg, rgba(5,10,22,0.55) 0%, rgba(5,10,22,0.30) 45%, transparent 70%)" }} />
+        <div className="absolute inset-0 pointer-events-none md:hidden z-10" style={{ background: "rgba(5,10,22,0.75)" }} />
+        <div className="absolute inset-0 pointer-events-none hidden md:block z-10"
+          style={{ background: "linear-gradient(90deg, rgba(5,10,22,0.80) 0%, rgba(5,10,22,0.55) 40%, rgba(5,10,22,0.10) 70%, transparent 100%)" }} />
 
         {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-5 lg:px-10 py-14 md:py-20 lg:py-28 flex flex-col justify-center" style={{ minHeight: 560 }}>
+        <div className="relative z-20 max-w-7xl mx-auto px-5 lg:px-10 py-14 md:py-20 lg:py-28 flex flex-col justify-center" style={{ minHeight: 560 }}>
           <div className="max-w-xl">
             <div className="hero-anim inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold mb-5 w-fit border"
               style={{ background: "rgba(0,200,255,0.15)", borderColor: "rgba(0,200,255,0.3)", color: "#00C8FF" }}>
@@ -310,24 +315,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Network stats card — bottom right */}
-        <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur rounded-xl shadow-xl p-3 z-10 min-w-[190px] hidden lg:block">
-          <p className="font-bold text-gray-800 mb-2 text-xs">เครือข่ายผู้ให้บริการ</p>
-          {NETWORKS.map((n) => (
-            <div key={n.name} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: n.color }} />
-                <span className="text-[11px] text-gray-600">{n.name}</span>
-              </div>
-              <span className="text-[11px] font-semibold text-gray-800">{n.count.toLocaleString()}</span>
-            </div>
-          ))}
-          <div className="mt-2 pt-1.5 border-t border-gray-100">
-            <Link href="/chargers" className="text-cyan-600 font-semibold text-[10px] hover:underline">
-              ดูทั้งหมด 15 เครือข่าย →
-            </Link>
-          </div>
-        </div>
       </section>
 
       {/* Stats bar */}

@@ -77,10 +77,16 @@ export default function Map({
         const icon = L.divIcon({
           className: "",
           html: isSelected
-            ? `<div style="background:#f97316;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>`
-            : `<div style="background:#22c55e;width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,
-          iconSize: isSelected ? [20, 20] : [14, 14],
-          iconAnchor: isSelected ? [10, 10] : [7, 7],
+            ? `<div style="position:relative;width:22px;height:22px">
+                <div style="position:absolute;inset:0;border-radius:50%;background:rgba(249,115,22,0.35);animation:ev-pulse-ring 1.4s ease-out infinite"></div>
+                <div style="position:absolute;inset:3px;background:#f97316;border-radius:50%;border:2.5px solid white;box-shadow:0 2px 8px rgba(249,115,22,.6)"></div>
+               </div>`
+            : `<div style="position:relative;width:18px;height:18px">
+                <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,200,255,0.3);animation:ev-pulse-ring 2s ease-out infinite"></div>
+                <div style="position:absolute;inset:3px;background:#00C8FF;border-radius:50%;border:2px solid white;box-shadow:0 1px 6px rgba(0,200,255,.5)"></div>
+               </div>`,
+          iconSize: isSelected ? [22, 22] : [18, 18],
+          iconAnchor: isSelected ? [11, 11] : [9, 9],
         });
         const marker = L.marker([Latitude, Longitude], { icon, title: Title })
           .addTo(map).on("click", () => onSelect(station));
